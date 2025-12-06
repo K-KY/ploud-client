@@ -1,0 +1,349 @@
+import React, {useState, type ChangeEvent} from 'react';
+import type {FileWithId} from "../types/FileWithId.ts";
+import type {UploadResponse} from "../types/UploadResponse.ts";
+import type {UploadStatus} from "../types/UploadStatus.ts";
+import "../styles/FileUploader.css"
+
+export default function FileUploader() {
+    const [files, setFiles] = useState<FileWithId[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [uploadStatus, setUploadStatus] = useState<Record<string, UploadStatus>>({});
+    const [group, setGrpup] = useState('');
+    const [ownerId, setOwnerId] = useState('');
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const API_URL = 'http://localhost:8080/api/v1/files';
+
+    const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = Array.from(e.target.files || []);
+        const validFiles: FileWithId[] = [];
+        const newStatus: Record<string, UploadStatus> = {};
+
+        selectedFiles.forEach(file => {
+            const fileId = `${file.name}-${file.size}-${Date.now()}`;
+
+            // 파일 크기 검증만 수행
+            if (file.size > MAX_FILE_SIZE) {
+                newStatus[fileId] = {
+                    status: 'error',
+                    message: `파일 크기가 10MB를 초과합니다 (${(file.size / 1024 / 1024).toFixed(2)}MB)`
+                };
+            } else {
+                newStatus[fileId] = {
+                    status: 'ready',
+                    message: '업로드 준비됨'
+                };
+                validFiles.push({file, id: fileId});
+            }
+        });
+
+        setFiles(prev => [...prev, ...validFiles]);
+        setUploadStatus(prev => ({...prev, ...newStatus}));
+    };
+
+    const uploadFile = async (fileWithId: FileWithId): Promise<void> => {
+        const {file, id: fileId} = fileWithId;
+
+        setUploadStatus(prev => ({
+            ...prev,
+            [fileId]: {status: 'uploading', message: '업로드 중...', progress: 0}
+        }));
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        if (group) {
+            formData.append('group', group);
+        }
+        if (ownerId) {
+            formData.append('ownerId', ownerId);
+        }
+
+        try {
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    setUploadStatus(prev => ({
+                        ...prev,
+                        [fileId]: {
+                            status: 'uploading',
+                            message: `업로드 중... %`
+                        }
+                    }));
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    try {
+                        const response: UploadResponse = JSON.parse(xhr.responseText);
+                        console.log(response);
+                        setUploadStatus(prev => ({
+                            ...prev,
+                            [fileId]: {
+                                status: 'success',
+                                message: '업로드 완료',
+                                progress: 100
+                            }
+                        }));
+                    } catch (error) {
+                        console.error(error);
+                        setUploadStatus(prev => ({
+                            ...prev,
+                            [fileId]: {
+                                status: 'success',
+                                message: '업로드 완료',
+                                progress: 100
+                            }
+                        }));
+                    }
+                } else {
+                    const errorMessage = xhr.responseText || '업로드 실패';
+                    setUploadStatus(prev => ({
+                        ...prev,
+                        [fileId]: {
+                            status: 'error',
+                            message: `업로드 실패: ${errorMessage}`
+                        }
+                    }));
+                }
+            });
+
+            xhr.addEventListener('error', () => {
+                setUploadStatus(prev => ({
+                    ...prev,
+                    [fileId]: {
+                        status: 'error',
+                        message: '네트워크 오류가 발생했습니다'
+                    }
+                }));
+            });
+
+            xhr.open('POST', API_URL);
+            xhr.send(formData);
+
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+            setUploadStatus(prev => ({
+                ...prev,
+                [fileId]: {
+                    status: 'error',
+                    message: `업로드 실패: ${errorMessage}`
+                }
+            }));
+        }
+    };
+
+    const handleUpload = async () => {
+        setUploading(true);
+
+        const filesToUpload = files.filter(fileWithId => {
+            const status = uploadStatus[fileWithId.id]?.status;
+            return status === 'ready';
+        });
+
+        // 병렬 업로드 (동시에 최대 3개)
+        const chunkSize = 3;
+        for (let i = 0; i < filesToUpload.length; i += chunkSize) {
+            const chunk = filesToUpload.slice(i, i + chunkSize);
+            await Promise.all(chunk.map(fileWithId => uploadFile(fileWithId)));
+        }
+
+        setUploading(false);
+    };
+
+    const removeFile = (id: string) => {
+        setFiles(prev => prev.filter(f => f.id !== id));
+        setUploadStatus(prev => {
+            const newStatus = {...prev};
+            delete newStatus[id];
+            return newStatus;
+        });
+    };
+
+    const clearAll = () => {
+        setFiles([]);
+        setUploadStatus({});
+    };
+
+    const getStatusColor = (status?: 'ready' | 'uploading' | 'success' | 'error') => {
+        switch (status) {
+            case 'success':
+                return "status-success";
+            case 'error':
+                return "status-error";
+            case 'uploading':
+                return "status-uploading";
+            default:
+                return "status-read";
+        }
+    };
+
+    const successCount = Object.values(uploadStatus).filter(s => s.status === 'success').length;
+    const errorCount = Object.values(uploadStatus).filter(s => s.status === 'error').length;
+
+    return (
+        <div className={"container"}>
+            <div className={"card"}>
+                <p className={"subtitle"}>파일을 업로드 (최대 10MB)</p>
+
+                <div className={"input-group"}>
+                    <div>
+                        <label className={"label"}>그룹</label>
+                        <input
+                            type="text"
+                            value={group}
+                            onChange={(e) => setGrpup(e.target.value)}
+                            placeholder="파일 그룹 입력"
+                            className={"input"}
+                        />
+                    </div>
+                    <div>
+                        <label className={"label"}>소유자 ID</label>
+                        <input
+                            type="text"
+                            value={ownerId}
+                            onChange={(e) => setOwnerId(e.target.value)}
+                            placeholder="소유자 ID 입력"
+                            className={"input"}
+                        />
+                    </div>
+                </div>
+
+                <div className={"dropzone"}>
+                    <input
+                        type="file"
+                        id="fileInput"
+                        multiple
+                        webkitdirectory=""
+                        directory=""
+                        onChange={handleFileSelect}
+                        style={{ display: 'none' }}
+                    />
+                    <input
+                        type="file"
+                        id="singleFileInput"
+                        multiple
+                        onChange={handleFileSelect}
+                        style={{ display: 'none' }}
+                    />
+
+                    <div className={"f3r-mb1r"}>📁</div>
+
+                    <div className={"flex-col-center-gap-sm"}>
+                        <label
+                            htmlFor="fileInput"
+                            className={"button button-primary"}
+                        >
+                            폴더 선택
+                        </label>
+
+                        <div style={{color: '#6b7280'}}>또는</div>
+
+                        <label
+                            htmlFor="singleFileInput"
+                            className={"button button-secondary"}
+                        >
+                            개별 파일 선택
+                        </label>
+                    </div>
+
+                    <p style={{fontSize: '0.875rem', color: '#6b7280', marginTop: '1rem'}}>
+                        여러 파일을 동시에 선택할 수 있습니다
+                    </p>
+                </div>
+
+                {files.length > 0 && (
+                    <div className={"flex-col-gap-1r"}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div>
+                                <h2 style={{fontSize: '1.25rem', fontWeight: '600', color: '#374151'}}>
+                                    선택된 파일 ({files.length})
+                                </h2>
+                                {(successCount > 0 || errorCount > 0) && (
+                                    <p style={{fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem'}}>
+                                        성공: {successCount} / 실패: {errorCount}
+                                    </p>
+                                )}
+                            </div>
+                            <button
+                                onClick={clearAll}
+                                disabled={uploading}
+                                style={{
+                                    fontSize: '0.875rem',
+                                    color: uploading ? '#9ca3af' : '#ef4444',
+                                    fontWeight: '500',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: uploading ? 'not-allowed' : 'pointer',
+                                }}
+                            >
+                                모두 제거
+                            </button>
+                        </div>
+
+                        <div className={"file-list"}>
+                            {files.map((fileWithId, i) => {
+                                const status = uploadStatus[fileWithId.id];
+
+                                return (
+                                    <div key={fileWithId.id + i} className={"file-item"}>
+                                        <div className={"file-info"}>
+                                            <div style={{flex: 1, minWidth: 0}}>
+                                                <p className={"file-name"}>
+                                                    {fileWithId.file.name}
+                                                </p>
+                                                <p className={"file-size"}>
+                                                    {(fileWithId.file.size / 1024).toFixed(2)} KB
+                                                    {status?.message && (
+                                                        <span
+                                                            className={getStatusColor(status.status)}
+                                                            style={{marginLeft: '0.5rem'}}>
+                • {status.message}
+                    </span>
+                                                    )}
+                                                </p>
+                                                {status?.status === 'uploading' && status.progress !== undefined && (
+                                                    <div className={"progress-bar"}>
+                                                        <div
+                                                            className={"progress-fill"}
+                                                            style={{
+                                                                width: `${status.progress}%`
+                                                            }}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {status?.status !== 'uploading' && status?.status !== 'success' && (
+                                            <button
+                                                onClick={() => removeFile(fileWithId.id)}
+                                                className={"remove-button"}
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <button
+                            onClick={handleUpload}
+                            disabled={uploading || files.length === 0}
+                            className={"upload-button"}
+                            style={{
+                                background: (uploading || files.length === 0) ? '#9ca3af' : '#3b82f6',
+                                cursor: (uploading || files.length === 0) ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            {uploading ? '업로드 중...' : '업로드 시작'}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
