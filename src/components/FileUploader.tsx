@@ -12,7 +12,7 @@ export default function FileUploader() {
     const [ownerId, setOwnerId] = useState('');
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const API_URL = 'http://localhost:8080/api/v1/files';
+    const API_URL = 'http://localhost:8080/api/v1/files/upload';
 
     const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(e.target.files || []);
