@@ -21,4 +21,14 @@ const getFiles = async (request: StorageRequest) => {
     })
 }
 
-export {getDirs, getFiles}
+const getParentDir = async (request: StorageRequest) => {
+    return await axios({
+        url:"http://localhost:8080/api/v1/dirs/current",
+        method: "POST",
+        data: request,
+    }).then((response) => {
+        return response.data;
+    })
+}
+
+export {getDirs, getFiles, getParentDir}
