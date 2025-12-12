@@ -15,6 +15,7 @@ interface BorderLayoutProps {
     className?: string;
     style?: React.CSSProperties;
     onClick?: () => void;
+    cursor?: string;
 }
 
 const BorderLayout: React.FC<BorderLayoutProps> = ({
@@ -30,7 +31,8 @@ const BorderLayout: React.FC<BorderLayoutProps> = ({
                                                        justify = 'start',
                                                        className = '',
                                                        style = {},
-                                                       onClick
+                                                       onClick,
+                                                       cursor
                                                    }) => {
     const containerStyle: React.CSSProperties = {
         padding,
@@ -38,8 +40,10 @@ const BorderLayout: React.FC<BorderLayoutProps> = ({
         borderRadius,
         background,
         boxShadow: shadow ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
+        backgroundColor: 'rgba(255, 255, 255, 0.0)',
         transition: 'box-shadow 0.2s, border-color 0.2s',
-        cursor: onClick ? 'pointer' : 'default',
+        cursor: cursor,
+
         ...style
     };
 
