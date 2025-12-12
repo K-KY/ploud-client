@@ -3,6 +3,7 @@ import {getDirs, getFiles, getParentDir} from "../axios/StorageApi.ts";
 import {BorderLayout} from "./BoarderLayout.tsx";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
+import styles from "../styles/FileViewer.module.css"
 
 const FileViewer = () => {
     const [files, setFiles] = useState<FileInfo[]>([]);
@@ -11,7 +12,6 @@ const FileViewer = () => {
     const [currentDirSeq, setCurrentDirSeq] = useState<number>(2);
 
     useEffect(() => {
-        console.log("use")
         getDirs({
             ownerId: "김규영",
             parentSeq: currentDirSeq,
@@ -45,24 +45,28 @@ const FileViewer = () => {
     return (
         <div className="file-list">
             {currentDirSeq !== null ? (
-                <a onClick={() => gotoParent()}>
-                    <BorderLayout>
+                <a className={`${styles.item}`} onClick={() => gotoParent()}>
+                    <BorderLayout cursor={"pointer"}>
                         ..
                     </BorderLayout>
                 </a>
             ) : null}
+
             {dirs.map((dir) => (
-                <a onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
-                    <BorderLayout key={dir.dirName + dir.dirSeq}>
+                <a className={`${styles.item}`} onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
+                    <BorderLayout cursor={"pointer"}>
                         {dir.dirName}--directory
                     </BorderLayout>
                 </a>
             ))}
             {files.map((file) => (
-                <BorderLayout key={file.storageKey}>
-                    {file.title}--file
-                </BorderLayout>
+                <a className={`${styles.item}`} key={file.storageKey}>
+                    <BorderLayout cursor={"pointer"}>
+                        {file.title}--file
+                    </BorderLayout>
+                </a>
             ))}
+
         </div>
     )
 }
