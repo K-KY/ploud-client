@@ -1,8 +1,8 @@
-import React, {useState, type ChangeEvent} from 'react';
+import {useState, type ChangeEvent} from 'react';
 import type {FileWithId} from "../types/FileWithId.ts";
 import type {UploadResponse} from "../types/UploadResponse.ts";
 import type {UploadStatus} from "../types/UploadStatus.ts";
-import "../styles/FileUploader.css"
+import styles from "../styles/FileUploader.module.css"
 
 export default function FileUploader() {
     const [files, setFiles] = useState<FileWithId[]>([]);
@@ -64,11 +64,13 @@ export default function FileUploader() {
 
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
                     setUploadStatus(prev => ({
                         ...prev,
                         [fileId]: {
                             status: 'uploading',
-                            message: `업로드 중... %`
+                            message: `업로드 중... ${percent}%`,
+                            progress: percent
                         }
                     }));
                 }
@@ -167,16 +169,17 @@ export default function FileUploader() {
         setUploadStatus({});
     };
 
+    // ⭐️ status에 따라 styles 객체의 속성을 반환하도록 수정
     const getStatusColor = (status?: 'ready' | 'uploading' | 'success' | 'error') => {
         switch (status) {
             case 'success':
-                return "status-success";
+                return styles.statusSuccess;
             case 'error':
-                return "status-error";
+                return styles.statusError;
             case 'uploading':
-                return "status-uploading";
+                return styles.statusUploading;
             default:
-                return "status-read";
+                return styles.statusReady;
         }
     };
 
@@ -184,34 +187,34 @@ export default function FileUploader() {
     const errorCount = Object.values(uploadStatus).filter(s => s.status === 'error').length;
 
     return (
-        <div className={"container"}>
-            <div className={"card"}>
-                <p className={"subtitle"}>파일을 업로드 (최대 10MB)</p>
+        <div className={styles.container}>
+            <div className={styles.card}>
+                <p className={styles.subtitle}>파일을 업로드 (최대 10MB)</p>
 
-                <div className={"input-group"}>
+                <div className={`${styles.inputGroup}`}>
                     <div>
-                        <label className={"label"}>그룹</label>
+                        <label className={styles.label}>그룹</label>
                         <input
                             type="text"
                             value={group}
                             onChange={(e) => setGrpup(e.target.value)}
                             placeholder="파일 그룹 입력"
-                            className={"input"}
+                            className={styles.input}
                         />
                     </div>
                     <div>
-                        <label className={"label"}>소유자 ID</label>
+                        <label className={styles.label}>소유자 ID</label>
                         <input
                             type="text"
                             value={ownerId}
                             onChange={(e) => setOwnerId(e.target.value)}
                             placeholder="소유자 ID 입력"
-                            className={"input"}
+                            className={styles.input}
                         />
                     </div>
                 </div>
 
-                <div className={"dropzone"}>
+                <div className={styles.dropzone}>
                     <input
                         type="file"
                         id="fileInput"
@@ -229,12 +232,12 @@ export default function FileUploader() {
                         style={{ display: 'none' }}
                     />
 
-                    <div className={"f3r-mb1r"}>📁</div>
+                    <div className={`${styles.f3rMb1r}`}>📁</div>
 
-                    <div className={"flex-col-center-gap-sm"}>
+                    <div className={`${styles.flexColCenterGapSm}`}>
                         <label
                             htmlFor="fileInput"
-                            className={"button button-primary"}
+                            className={`${styles.button} ${styles.buttonPrimary}`}
                         >
                             폴더 선택
                         </label>
@@ -243,7 +246,7 @@ export default function FileUploader() {
 
                         <label
                             htmlFor="singleFileInput"
-                            className={"button button-secondary"}
+                            className={`${styles.button} ${styles.buttonSecondary}`}
                         >
                             개별 파일 선택
                         </label>
@@ -255,7 +258,7 @@ export default function FileUploader() {
                 </div>
 
                 {files.length > 0 && (
-                    <div className={"flex-col-gap-1r"}>
+                    <div className={`${styles.flexColGap1r}`}>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                             <div>
                                 <h2 style={{fontSize: '1.25rem', fontWeight: '600', color: '#374151'}}>
@@ -283,31 +286,32 @@ export default function FileUploader() {
                             </button>
                         </div>
 
-                        <div className={"file-list"}>
+                        <div className={`${styles.fileList}`}>
                             {files.map((fileWithId, i) => {
                                 const status = uploadStatus[fileWithId.id];
 
                                 return (
-                                    <div key={fileWithId.id + i} className={"file-item"}>
-                                        <div className={"file-info"}>
+                                    <div key={fileWithId.id + i} className={`${styles.fileItem}`}>
+                                        <div className={`${styles.fileInfo}`}>
                                             <div style={{flex: 1, minWidth: 0}}>
-                                                <p className={"file-name"}>
+                                                <p className={`${styles.fileName}`}>
                                                     {fileWithId.file.name}
                                                 </p>
-                                                <p className={"file-size"}>
+                                                <p className={`${styles.fileSize}`}>
                                                     {(fileWithId.file.size / 1024).toFixed(2)} KB
                                                     {status?.message && (
                                                         <span
+                                                            // ⭐️ getStatusColor가 styles 객체의 값을 반환함
                                                             className={getStatusColor(status.status)}
                                                             style={{marginLeft: '0.5rem'}}>
-                • {status.message}
-                    </span>
+                                                            • {status.message}
+                                                        </span>
                                                     )}
                                                 </p>
                                                 {status?.status === 'uploading' && status.progress !== undefined && (
-                                                    <div className={"progress-bar"}>
+                                                    <div className={`${styles.progressBar}`}>
                                                         <div
-                                                            className={"progress-fill"}
+                                                            className={`${styles.progressFill}`}
                                                             style={{
                                                                 width: `${status.progress}%`
                                                             }}
@@ -320,7 +324,7 @@ export default function FileUploader() {
                                         {status?.status !== 'uploading' && status?.status !== 'success' && (
                                             <button
                                                 onClick={() => removeFile(fileWithId.id)}
-                                                className={"remove-button"}
+                                                className={`${styles.removeButton}`}
                                             >
                                                 ✕
                                             </button>
@@ -333,7 +337,7 @@ export default function FileUploader() {
                         <button
                             onClick={handleUpload}
                             disabled={uploading || files.length === 0}
-                            className={"upload-button"}
+                            className={`${styles.uploadButton}`}
                             style={{
                                 background: (uploading || files.length === 0) ? '#9ca3af' : '#3b82f6',
                                 cursor: (uploading || files.length === 0) ? 'not-allowed' : 'pointer',
