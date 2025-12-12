@@ -32,7 +32,7 @@ const FileViewer = () => {
 
     //.. 폴더 눌렀을 때
     function gotoParent() {
-        console.log("gotoParent")
+        console.log(currentDirSeq);
         getParentDir({
             ownerId: "김규영",
             parentSeq: currentDirSeq,
@@ -44,11 +44,13 @@ const FileViewer = () => {
 
     return (
         <div className="file-list">
-            <a onClick={() => gotoParent()}>
-                <BorderLayout>
-                    ..
-                </BorderLayout>
-            </a>
+            {currentDirSeq !== null ? (
+                <a onClick={() => gotoParent()}>
+                    <BorderLayout>
+                        ..
+                    </BorderLayout>
+                </a>
+            ) : null}
             {dirs.map((dir) => (
                 <a onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
                     <BorderLayout key={dir.dirName + dir.dirSeq}>
