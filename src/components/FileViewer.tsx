@@ -4,6 +4,8 @@ import {BorderLayout} from "./BoarderLayout.tsx";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 import styles from "../styles/FileViewer.module.css"
+import {DirIcon} from "./DirIcon.tsx";
+import {FileIcon} from "./FileIcon.tsx";
 
 const FileViewer = () => {
     const [files, setFiles] = useState<FileInfo[]>([]);
@@ -47,7 +49,9 @@ const FileViewer = () => {
             {currentDirSeq !== null ? (
                 <a className={`${styles.item}`} onClick={() => gotoParent()}>
                     <BorderLayout cursor={"pointer"}>
-                        ..
+                        <div>
+                            <DirIcon>..</DirIcon>
+                        </div>
                     </BorderLayout>
                 </a>
             ) : null}
@@ -55,14 +59,14 @@ const FileViewer = () => {
             {dirs.map((dir) => (
                 <a className={`${styles.item}`} onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
                     <BorderLayout cursor={"pointer"}>
-                        {dir.dirName}--directory
+                        <DirIcon>{dir.dirName}</DirIcon>
                     </BorderLayout>
                 </a>
             ))}
             {files.map((file) => (
                 <a className={`${styles.item}`} key={file.storageKey}>
                     <BorderLayout cursor={"pointer"}>
-                        {file.title}--file
+                        <FileIcon>{file.title}</FileIcon>
                     </BorderLayout>
                 </a>
             ))}
