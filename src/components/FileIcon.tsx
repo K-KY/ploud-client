@@ -1,3 +1,4 @@
+import styles from "../styles/IconStyle.module.css"
 interface FileIconProps {
     children: React.ReactNode;
 }
@@ -20,7 +21,8 @@ const FileIcon = ({children}: FileIconProps) => {
                 <polyline points="14 2 14 8 20 8"/>
             </svg>
 
-            {children}
+            <a className={`${styles.iconTitle}`}>{children}</a>
+
         </div>
     )
 }

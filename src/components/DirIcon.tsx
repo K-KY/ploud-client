@@ -1,3 +1,5 @@
+import styles from "../styles/IconStyle.module.css"
+
 interface DirIconPros {
     children: React.ReactNode;
 }
@@ -18,7 +20,8 @@ const DirIcon = ({children}: DirIconPros) => {
             >
                 <path d="M3 7h5l2 3h11v9a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/>
             </svg>
-            {children}
+            <a className={`${styles.iconTitle}`}>{children}</a>
+
         </div>
 
     )
