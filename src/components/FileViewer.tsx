@@ -45,34 +45,40 @@ const FileViewer = () => {
     }
 
     return (
-        <div className="file-list">
-            {currentDirSeq !== null ? (
-                <a className={`${styles.item}`} onClick={() => gotoParent()}>
-                    <BorderLayout cursor={"pointer"}>
-                        <div>
-                            <DirIcon>..</DirIcon>
-                        </div>
-                    </BorderLayout>
-                </a>
-            ) : null}
+        <div className={`${styles.fileListContainer}`}>
+            <div className={`${styles.fileList}`}>
+                {currentDirSeq !== null ? (
+                    <a className={`${styles.item}`} onClick={() => gotoParent()}>
+                        <BorderLayout cursor={"pointer"}>
+                            <div>
+                                <DirIcon>..</DirIcon>
+                            </div>
+                        </BorderLayout>
+                    </a>
+                ) : null}
 
-            {dirs.map((dir) => (
-                <a className={`${styles.item}`} onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
-                    <BorderLayout cursor={"pointer"}>
-                        <DirIcon/>
-                        {dir.dirName}
-                    </BorderLayout>
-                </a>
-            ))}
-            {files.map((file) => (
-                <a className={`${styles.item}`} key={file.storageKey}>
-                    <BorderLayout cursor={"pointer"}>
-                        <FileIcon/>
-                        {file.title} -- {file.size}
-                    </BorderLayout>
-                </a>
-            ))}
+                {dirs.map((dir) => (
+                    <a className={`${styles.item}`} onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
+                        <BorderLayout cursor={"pointer"}>
+                            <DirIcon/>
+                            {dir.dirName}
+                        </BorderLayout>
+                    </a>
+                ))}
+                {files.map((file) => (
+                    <a className={`${styles.item}`} key={file.storageKey}>
+                        <BorderLayout cursor={"pointer"}>
+                            <FileIcon/>
+                            <div>
 
+                                {file.title} -- {file.size}
+                            </div>
+                        </BorderLayout>
+                    </a>
+                ))}
+
+
+            </div>
         </div>
     )
 }
