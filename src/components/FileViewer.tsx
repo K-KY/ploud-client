@@ -59,14 +59,16 @@ const FileViewer = () => {
             {dirs.map((dir) => (
                 <a className={`${styles.item}`} onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
                     <BorderLayout cursor={"pointer"}>
-                        <DirIcon>{dir.dirName}</DirIcon>
+                        <DirIcon/>
+                        {dir.dirName}
                     </BorderLayout>
                 </a>
             ))}
             {files.map((file) => (
                 <a className={`${styles.item}`} key={file.storageKey}>
                     <BorderLayout cursor={"pointer"}>
-                        <FileIcon>{file.title}</FileIcon>
+                        <FileIcon/>
+                        {file.title} -- {file.size}
                     </BorderLayout>
                 </a>
             ))}

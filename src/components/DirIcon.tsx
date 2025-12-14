@@ -1,7 +1,7 @@
 import styles from "../styles/IconStyle.module.css"
 
 interface DirIconPros {
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 const DirIcon = ({children}: DirIconPros) => {
