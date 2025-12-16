@@ -21,7 +21,7 @@ const FileIcon = ({children}: FileIconProps) => {
                 <polyline points="14 2 14 8 20 8"/>
             </svg>
 
-            <a className={`${styles.iconTitle}`}>{children}</a>
+            <b className={`${styles.iconTitle}`}>{children}</b>
 
         </div>
     )

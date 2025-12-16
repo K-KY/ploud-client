@@ -20,7 +20,7 @@ const DirIcon = ({children}: DirIconPros) => {
             >
                 <path d="M3 7h5l2 3h11v9a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/>
             </svg>
-            <a className={`${styles.iconTitle}`}>{children}</a>
+            <b className={`${styles.iconTitle}`}>{children}</b>
 
         </div>
 
