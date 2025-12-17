@@ -8,7 +8,7 @@ export default function FileUploader() {
     const [files, setFiles] = useState<FileWithId[]>([]);
     const [uploading, setUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<Record<string, UploadStatus>>({});
-    const [group, setGrpup] = useState('');
+    const [group, setGroup] = useState('');
     const [ownerId, setOwnerId] = useState('');
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
