@@ -1,8 +1,9 @@
 import {useState, type ChangeEvent} from 'react';
 import type {FileWithId} from "../types/FileWithId.ts";
-import type {UploadResponse} from "../types/UploadResponse.ts";
 import type {UploadStatus} from "../types/UploadStatus.ts";
 import styles from "../styles/FileUploader.module.css"
+import {postFile} from "../axios/MetadataApi.ts";
+import type {StorageInfo} from "../types/StorageInfo.ts";
 
 export default function FileUploader() {
     const [files, setFiles] = useState<FileWithId[]>([]);
@@ -10,9 +11,10 @@ export default function FileUploader() {
     const [uploadStatus, setUploadStatus] = useState<Record<string, UploadStatus>>({});
     const [group, setGroup] = useState('');
     const [ownerId, setOwnerId] = useState('');
+    const [isHls, setHls] = useState<boolean>(false);
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const API_URL = 'http://localhost:8080/api/v1/files/upload';
+    const API_URL = 'http://localhost:8080/storages/upload';
 
     const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(e.target.files || []);
@@ -20,6 +22,9 @@ export default function FileUploader() {
         const newStatus: Record<string, UploadStatus> = {};
 
         selectedFiles.forEach(file => {
+            if (file.name.endsWith('.m3u8')) {
+                setHls(true)
+            }
             const fileId = `${file.name}-${file.size}-${Date.now()}`;
 
             // 파일 크기 검증만 수행
@@ -59,6 +64,10 @@ export default function FileUploader() {
             formData.append('ownerId', ownerId);
         }
 
+        if (isHls) {
+            formData.append('isHls', String(isHls));
+        }
+
         try {
             const xhr = new XMLHttpRequest();
 
@@ -79,14 +88,15 @@ export default function FileUploader() {
             xhr.addEventListener('load', () => {
                 if (xhr.status === 200) {
                     try {
-                        const response: UploadResponse = JSON.parse(xhr.responseText);
-                        console.log(response);
+                        const response: StorageInfo = JSON.parse(xhr.responseText);
+                        postFile(response, isHls);
                         setUploadStatus(prev => ({
                             ...prev,
                             [fileId]: {
                                 status: 'success',
                                 message: '업로드 완료',
-                                progress: 100
+                                progress: 100,
+                                storageKey: response.storageKey
                             }
                         }));
                     } catch (error) {
@@ -197,7 +207,7 @@ export default function FileUploader() {
                         <input
                             type="text"
                             value={group}
-                            onChange={(e) => setGrpup(e.target.value)}
+                            onChange={(e) => setGroup(e.target.value)}
                             placeholder="파일 그룹 입력"
                             className={styles.input}
                         />
@@ -222,14 +232,14 @@ export default function FileUploader() {
                         webkitdirectory=""
                         directory=""
                         onChange={handleFileSelect}
-                        style={{ display: 'none' }}
+                        style={{display: 'none'}}
                     />
                     <input
                         type="file"
                         id="singleFileInput"
                         multiple
                         onChange={handleFileSelect}
-                        style={{ display: 'none' }}
+                        style={{display: 'none'}}
                     />
 
                     <div className={`${styles.f3rMb1r}`}>📁</div>
