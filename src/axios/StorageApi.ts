@@ -1,9 +1,10 @@
 import type {StorageRequest} from "../types/StorageRequest.ts";
 import axios from "axios";
+import type {FileWithId} from "../types/FileWithId.ts";
 
 const getDirs = async (request: StorageRequest) => {
     return await axios({
-        url:"http://localhost:8080/api/v1/dirs",
+        url: "http://localhost:8080/api/v1/dirs",
         method: "POST",
         data: request,
     }).then((response) => {
@@ -13,7 +14,7 @@ const getDirs = async (request: StorageRequest) => {
 
 const getFiles = async (request: StorageRequest) => {
     return await axios({
-        url:"http://localhost:8080/api/v1/files",
+        url: "http://localhost:8080/api/v1/files",
         method: "POST",
         data: request,
     }).then((response) => {
@@ -23,7 +24,7 @@ const getFiles = async (request: StorageRequest) => {
 
 const getParentDir = async (request: StorageRequest) => {
     return await axios({
-        url:"http://localhost:8080/api/v1/dirs/current",
+        url: "http://localhost:8080/api/v1/dirs/current",
         method: "POST",
         data: request,
     }).then((response) => {
@@ -31,17 +32,21 @@ const getParentDir = async (request: StorageRequest) => {
     })
 }
 
-const getPresignedUrl = async (fileNames:string[]) => {
+const getPresignedUrl = async (files: FileWithId[]) => {
     return await axios({
-        url:"http://localhost:8080/storages",
+        url: "http://localhost:8080/storages",
         method: "POST",
-        data:{
-            fileNames:fileNames,
+        data: {
+            ownerId: "김규영", // jwt로 대체할거
+            fileNames: files.map(fileWithId => ({
+                fileName: fileWithId.file.name,
+                fileId: fileWithId.id
+            }))
         }
     }).then((response) => {
-        console.log(response)
+        console.log(response);
         return response.data;
-    })
+    });
 }
 
-export {getDirs, getFiles, getParentDir,  getPresignedUrl}
+export {getDirs, getFiles, getParentDir, getPresignedUrl}
