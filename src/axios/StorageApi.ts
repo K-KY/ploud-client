@@ -31,4 +31,17 @@ const getParentDir = async (request: StorageRequest) => {
     })
 }
 
-export {getDirs, getFiles, getParentDir}
+const getPresignedUrl = async (fileNames:string[]) => {
+    return await axios({
+        url:"http://localhost:8080/storages",
+        method: "POST",
+        data:{
+            fileNames:fileNames,
+        }
+    }).then((response) => {
+        console.log(response)
+        return response.data;
+    })
+}
+
+export {getDirs, getFiles, getParentDir,  getPresignedUrl}
