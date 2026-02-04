@@ -1,5 +1,4 @@
 interface StorageInfo {
-    storageKey: string;
     ownerId: string;
     group: string;
     originalFilename: string;
