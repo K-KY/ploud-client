@@ -2,6 +2,7 @@ import {useState, type ChangeEvent} from 'react';
 import type {FileWithId} from "../types/FileWithId.ts";
 import type {UploadStatus} from "../types/UploadStatus.ts";
 import styles from "../styles/FileUploader.module.css"
+import {getPresignedUrl} from "../axios/StorageApi.ts";
 import {postFile} from "../axios/MetadataApi.ts";
 import type {StorageInfo} from "../types/StorageInfo.ts";
 
@@ -14,7 +15,6 @@ export default function FileUploader() {
     const [isHls, setHls] = useState<boolean>(false);
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const API_URL = 'http://localhost:8080/storages/upload';
 
     const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(e.target.files || []);
@@ -38,7 +38,7 @@ export default function FileUploader() {
                     status: 'ready',
                     message: '업로드 준비됨'
                 };
-                validFiles.push({file, id: fileId});
+                validFiles.push({file, id: fileId, preSignedUrl:""});
             }
         });
 
@@ -47,15 +47,14 @@ export default function FileUploader() {
     };
 
     const uploadFile = async (fileWithId: FileWithId): Promise<void> => {
-        const {file, id: fileId} = fileWithId;
 
         setUploadStatus(prev => ({
             ...prev,
-            [fileId]: {status: 'uploading', message: '업로드 중...', progress: 0}
+            [fileWithId.id]: {status: 'uploading', message: '업로드 중...', progress: 0}
         }));
 
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', fileWithId.file);
 
         if (group) {
             formData.append('group', group);
@@ -76,7 +75,7 @@ export default function FileUploader() {
                     const percent = Math.round((e.loaded / e.total) * 100);
                     setUploadStatus(prev => ({
                         ...prev,
-                        [fileId]: {
+                        [fileWithId.id]: {
                             status: 'uploading',
                             message: `업로드 중... ${percent}%`,
                             progress: percent
@@ -88,22 +87,20 @@ export default function FileUploader() {
             xhr.addEventListener('load', () => {
                 if (xhr.status === 200) {
                     try {
-                        const response: StorageInfo = JSON.parse(xhr.responseText);
-                        postFile(response, isHls);
                         setUploadStatus(prev => ({
                             ...prev,
-                            [fileId]: {
+                            [fileWithId.id]: {
                                 status: 'success',
                                 message: '업로드 완료',
                                 progress: 100,
-                                storageKey: response.storageKey
                             }
                         }));
+
                     } catch (error) {
                         console.error(error);
                         setUploadStatus(prev => ({
                             ...prev,
-                            [fileId]: {
+                            [fileWithId.id]: {
                                 status: 'success',
                                 message: '업로드 완료',
                                 progress: 100
@@ -114,7 +111,7 @@ export default function FileUploader() {
                     const errorMessage = xhr.responseText || '업로드 실패';
                     setUploadStatus(prev => ({
                         ...prev,
-                        [fileId]: {
+                        [fileWithId.id]: {
                             status: 'error',
                             message: `업로드 실패: ${errorMessage}`
                         }
@@ -125,31 +122,42 @@ export default function FileUploader() {
             xhr.addEventListener('error', () => {
                 setUploadStatus(prev => ({
                     ...prev,
-                    [fileId]: {
+                    [fileWithId.id]: {
                         status: 'error',
                         message: '네트워크 오류가 발생했습니다'
                     }
                 }));
             });
 
-            xhr.open('POST', API_URL);
+            xhr.open('PUT', fileWithId.preSignedUrl);
             xhr.send(formData);
 
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
             setUploadStatus(prev => ({
                 ...prev,
-                [fileId]: {
+                [fileWithId.id]: {
                     status: 'error',
                     message: `업로드 실패: ${errorMessage}`
                 }
             }));
         }
+        const file:StorageInfo = {
+            ownerId:"김규영",
+            group:"",
+            originalFilename: fileWithId.file.webkitRelativePath,
+            size:fileWithId.file.size,
+            contentType:fileWithId.file.type,
+            isHls:false
+        }
+
+        postFile(file, false)
     };
 
     const handleUpload = async () => {
         setUploading(true);
 
+        //준비 상태인 것만 필터
         const filesToUpload = files.filter(fileWithId => {
             const status = uploadStatus[fileWithId.id]?.status;
             return status === 'ready';
@@ -159,11 +167,28 @@ export default function FileUploader() {
         const chunkSize = 3;
         for (let i = 0; i < filesToUpload.length; i += chunkSize) {
             const chunk = filesToUpload.slice(i, i + chunkSize);
-            await Promise.all(chunk.map(fileWithId => uploadFile(fileWithId)));
+            const presignedUrls = await getPresignedUrl(chunk);
+
+            // presignedUrl을 각 파일에 매핑
+            const chunkWithUrls = chunk.map(fileWithId => {
+                const urlData = presignedUrls.find((item:{fileName:string, fileId:string}) => item.fileId === fileWithId.id);
+                return {
+                    ...fileWithId,
+                    preSignedUrl: urlData?.preSignedUrl || urlData?.url
+                };
+            });
+
+            console.log(chunkWithUrls);
+
+            await Promise.all(chunkWithUrls.map(fileWithId => {
+                uploadFile(fileWithId);
+            }));
         }
 
         setUploading(false);
     };
+
+
 
     const removeFile = (id: string) => {
         setFiles(prev => prev.filter(f => f.id !== id));
