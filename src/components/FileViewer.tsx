@@ -11,7 +11,7 @@ const FileViewer = () => {
     const [files, setFiles] = useState<FileInfo[]>([]);
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
     //undefined인 경우 사용자의 루트 디렉토리 조회
-    const [currentDirSeq, setCurrentDirSeq] = useState<number>(2);
+    const [currentDirSeq, setCurrentDirSeq] = useState<number>();
 
     useEffect(() => {
         getDirs({
