@@ -46,7 +46,8 @@ export default function FileUploader() {
         setUploadStatus(prev => ({...prev, ...newStatus}));
     };
 
-    const uploadFile = async (fileWithId: FileWithId): Promise<void> => {
+    const uploadFile = (fileWithId: FileWithId): Promise<void> =>
+        new Promise((resolve, reject) => {
 
         setUploadStatus(prev => ({
             ...prev,
@@ -132,6 +133,8 @@ export default function FileUploader() {
             xhr.open('PUT', fileWithId.preSignedUrl);
             xhr.send(formData);
 
+            xhr.onload = () => resolve();
+            xhr.onerror = () => reject();
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
             setUploadStatus(prev => ({
@@ -152,7 +155,8 @@ export default function FileUploader() {
         }
 
         postFile(file, false)
-    };
+
+    });
 
     const handleUpload = async () => {
         setUploading(true);
