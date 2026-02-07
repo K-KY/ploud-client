@@ -10,7 +10,6 @@ export default function FileUploader() {
     const [files, setFiles] = useState<FileWithId[]>([]);
     const [uploading, setUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<Record<string, UploadStatus>>({});
-    const [group, setGroup] = useState('');
     const [ownerId, setOwnerId] = useState('');
     const [isHls, setHls] = useState<boolean>(false);
 
@@ -57,9 +56,6 @@ export default function FileUploader() {
         const formData = new FormData();
         formData.append('file', fileWithId.file);
 
-        if (group) {
-            formData.append('group', group);
-        }
         if (ownerId) {
             formData.append('ownerId', ownerId);
         }
@@ -231,16 +227,6 @@ export default function FileUploader() {
                 <p className={styles.subtitle}>파일을 업로드 (최대 10MB)</p>
 
                 <div className={`${styles.inputGroup}`}>
-                    <div>
-                        <label className={styles.label}>그룹</label>
-                        <input
-                            type="text"
-                            value={group}
-                            onChange={(e) => setGroup(e.target.value)}
-                            placeholder="파일 그룹 입력"
-                            className={styles.input}
-                        />
-                    </div>
                     <div>
                         <label className={styles.label}>소유자 ID</label>
                         <input
