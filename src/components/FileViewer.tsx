@@ -7,11 +7,17 @@ import styles from "../styles/FileViewer.module.css"
 import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
 
-const FileViewer = () => {
+interface FileViewerProps {
+    currentDirStack:DirectoryInfo[];
+    onDirChange: React.Dispatch<React.SetStateAction<DirectoryInfo[]>>;
+}
+
+const FileViewer:React.FC<FileViewerProps> = ({currentDirStack, onDirChange}) => {
     const [files, setFiles] = useState<FileInfo[]>([]);
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
     //undefined인 경우 사용자의 루트 디렉토리 조회
     const [currentDirSeq, setCurrentDirSeq] = useState<number>();
+    console.log(currentDirStack);
 
     useEffect(() => {
         getDirs({
@@ -30,6 +36,7 @@ const FileViewer = () => {
     //디렉토리 눌렀을 때
     function changeDir(dir: DirectoryInfo) {
         setCurrentDirSeq(dir.dirSeq)
+        onDirChange(prev => [...prev, dir]);
     }
 
     //.. 폴더 눌렀을 때
