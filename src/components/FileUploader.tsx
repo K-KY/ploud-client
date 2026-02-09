@@ -145,6 +145,7 @@ export default function FileUploader() {
             ownerId:"김규영",
             group:"",
             originalFilename: fileWithId.file.webkitRelativePath,
+            location:"",
             size:fileWithId.file.size,
             contentType:fileWithId.file.type,
             isHls:false
