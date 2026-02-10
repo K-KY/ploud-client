@@ -49,6 +49,7 @@ const FileViewer:React.FC<FileViewerProps> = ({currentDirStack, onDirChange}) =>
             console.log(res.dirSeq);
             setCurrentDirSeq(res.parentSeq)
         })
+        onDirChange(prev =>prev.slice(0, -1));
     }
 
     return (
