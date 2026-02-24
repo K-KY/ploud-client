@@ -1,15 +1,13 @@
 import React, { useState, type FormEvent } from 'react';
 import styles from '../styles/LoginPage.module.css';
+import type {LoginForm} from "../types/LoginForm.ts";
+import {login} from "../axios/UserApi.ts";
 
-interface LoginForm {
-    email: string;
-    password: string;
-}
 
 export default function LoginPage() {
     const [formData, setFormData] = useState<LoginForm>({
-        email: '',
-        password: '',
+        userEmail: '',
+        userPassword: '',
     });
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState(false);
@@ -28,7 +26,7 @@ export default function LoginPage() {
         setError('');
         setLoading(true);
 
-        if (!formData.email || !formData.password) {
+        if (!formData.userEmail || !formData.userPassword) {
             setError('이메일과 비밀번호를 모두 입력해주세요.');
             setLoading(false);
             return;
@@ -60,14 +58,14 @@ export default function LoginPage() {
                     )}
 
                     <div className={styles.inputGroup}>
-                        <label htmlFor="email" className={styles.label}>
+                        <label htmlFor="userEmail" className={styles.label}>
                             이메일
                         </label>
                         <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
+                            type="userEmail"
+                            id="userEmail"
+                            name="userEmail"
+                            value={formData.userEmail}
                             onChange={handleInputChange}
                             placeholder="example@email.com"
                             className={styles.input}
@@ -76,14 +74,14 @@ export default function LoginPage() {
                     </div>
 
                     <div className={styles.inputGroup}>
-                        <label htmlFor="password" className={styles.label}>
+                        <label htmlFor="userPassword" className={styles.label}>
                             비밀번호
                         </label>
                         <input
                             type="password"
-                            id="password"
-                            name="password"
-                            value={formData.password}
+                            id="userPassword"
+                            name="userPassword"
+                            value={formData.userPassword}
                             onChange={handleInputChange}
                             placeholder="••••••••"
                             className={styles.input}
