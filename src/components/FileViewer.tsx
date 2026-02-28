@@ -17,20 +17,20 @@ const FileViewer:React.FC<FileViewerProps> = ({currentDirStack, onDirChange}) =>
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
     //undefined인 경우 사용자의 루트 디렉토리 조회
     const [currentDirSeq, setCurrentDirSeq] = useState<number>();
-    console.log(currentDirStack);
 
     useEffect(() => {
         getDirs({
-            ownerId: "김규영",
             parentSeq: currentDirSeq,
-        }).then(res => setDirs(res));
+        }).then(res => {
+            setDirs(res)
+        });
 
         getFiles({
-            ownerId: "김규영",
             parentSeq: currentDirSeq,
         }).then(res => {
             setFiles(res)
         });
+
     }, [currentDirSeq])
 
     //디렉토리 눌렀을 때
@@ -41,12 +41,9 @@ const FileViewer:React.FC<FileViewerProps> = ({currentDirStack, onDirChange}) =>
 
     //.. 폴더 눌렀을 때
     function gotoParent() {
-        console.log(currentDirSeq);
         getParentDir({
-            ownerId: "김규영",
             parentSeq: currentDirSeq,
         }).then(res => {
-            console.log(res.dirSeq);
             setCurrentDirSeq(res.parentSeq)
         })
         onDirChange(prev =>prev.slice(0, -1));
