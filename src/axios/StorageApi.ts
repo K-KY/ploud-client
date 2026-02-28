@@ -27,7 +27,6 @@ const getParentDir = async (request: StorageRequest) => {
 
 const getPresignedUrl = async (files: FileWithId[]) => {
     return await api.post("/storages", {
-        ownerId: "김규영", // jwt로 대체할거
         fileNames: files.map(fileWithId => ({
             fileName: fileWithId.file.name,
             fileId: fileWithId.id
@@ -43,7 +42,6 @@ api.interceptors.request.use(async (config) => {
 
     console.log(token)
     if (!token) {
-        console.log("리프레시")
         await refresh()
         config.headers.Authorization = `Bearer ${userAuthStore.getState().accessToken}`
 

@@ -1,5 +1,4 @@
 interface StorageRequest {
-    ownerId:string,
     parentSeq:number|undefined,
 }
 
