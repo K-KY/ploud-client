@@ -11,7 +11,6 @@ export const api = axios.create({
 })
 
 const getDirs = async (request: StorageRequest) => {
-    console.log(userAuthStore.getState())
     return await api.post("/api/v1/dirs", request)
         .then(response => {return response.data})
 }
