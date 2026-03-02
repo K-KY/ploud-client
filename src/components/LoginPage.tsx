@@ -33,6 +33,7 @@ export default function LoginPage() {
         }
 
         try {
+            login(formData);
             console.log('로그인 성공:');
 
         } catch (err) {
