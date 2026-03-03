@@ -1,20 +1,17 @@
-import FileUploader from "./components/FileUploader.tsx";
-import {FileViewer} from "./components/FileViewer.tsx";
-import {useState} from "react";
-import type {DirectoryInfo} from "./types/DirectoryInfo.ts";
+import LoginPage from "./components/LoginPage.tsx";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {Home} from "./components/Home.tsx";
 
 function App() {
 
-    const [currentDirStack, setCurrentDirStack] = useState<DirectoryInfo[]>([])
     return (
         <>
-            <div>
-                <h3>{currentDirStack.map((c)=> {
-                    return (<div>{c.dirName}</div>)
-                })}</h3>
-            </div>
-            <FileUploader></FileUploader>
-            <FileViewer currentDirStack={currentDirStack} onDirChange={setCurrentDirStack}></FileViewer>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/" element={<Home/>}></Route>
+                </Routes>
+            </BrowserRouter>
         </>
     )
 }
