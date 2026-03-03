@@ -14,9 +14,6 @@ const login = async (request: LoginForm) => {
             userAuthStore.setState({
                 accessToken: res.data.accessToken,
             })
-
-            const state = userAuthStore.getState();
-            console.log(state)
         });
 }
 
@@ -26,7 +23,10 @@ const refresh = async () => {
             console.log('refresh success', res.data);
             userAuthStore.setState({
                 accessToken: res.data.accessToken,
+                isAuthenticated: true
             })
+        }).catch((err) => {
+            console.log('refresh fail', err);
         });
 }
 
