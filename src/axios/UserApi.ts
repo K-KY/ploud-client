@@ -30,4 +30,8 @@ const refresh = async () => {
         });
 }
 
-export {login, refresh}
+const logout = async () => {
+    return await api.post("auth/logout")
+}
+
+export {login, refresh, logout}
