@@ -39,8 +39,6 @@ const getPresignedUrl = async (files: FileWithId[]) => {
 
 api.interceptors.request.use(async (config) => {
     const token = userAuthStore.getState().accessToken
-
-    console.log(token)
     if (!token) {
         await refresh()
         config.headers.Authorization = `Bearer ${userAuthStore.getState().accessToken}`
