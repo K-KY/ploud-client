@@ -1,10 +1,11 @@
-import React, { useState, type FormEvent } from 'react';
+import React, {useState, type FormEvent} from 'react';
 import styles from '../styles/LoginPage.module.css';
 import type {LoginForm} from "../types/LoginForm.ts";
 import {login} from "../axios/UserApi.ts";
-
+import {useNavigate} from "react-router-dom";
 
 export default function LoginPage() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState<LoginForm>({
         userEmail: '',
         userPassword: '',
@@ -13,7 +14,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value,
@@ -33,9 +34,9 @@ export default function LoginPage() {
         }
 
         try {
-            login(formData);
-            console.log('로그인 성공:');
-
+            console.log("로그인")
+            login(formData)
+            navigate('/')
         } catch (err) {
             setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다.');
         } finally {
