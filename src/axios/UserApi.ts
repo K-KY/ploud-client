@@ -31,7 +31,7 @@ const refresh = async () => {
 }
 
 const logout = async () => {
-    return await api.post("auth/logout")
+    return await api.post("/logout")
 }
 
 export {login, refresh, logout}
