@@ -1,4 +1,4 @@
-import styles from "../styles/LoginPage.module.css";
+import styles from "../styles/Button.module.css";
 
 interface ButtonProp {
     onClick: () => void;
