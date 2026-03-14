@@ -10,7 +10,6 @@ export default function FileUploader() {
     const [files, setFiles] = useState<FileWithId[]>([]);
     const [uploading, setUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<Record<string, UploadStatus>>({});
-    const [ownerId, setOwnerId] = useState('');
     const [isHls, setHls] = useState<boolean>(false);
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -55,10 +54,6 @@ export default function FileUploader() {
 
         const formData = new FormData();
         formData.append('file', fileWithId.file);
-
-        if (ownerId) {
-            formData.append('ownerId', ownerId);
-        }
 
         if (isHls) {
             formData.append('isHls', String(isHls));
@@ -223,19 +218,6 @@ export default function FileUploader() {
         <div className={styles.container}>
             <div className={styles.card}>
                 <p className={styles.subtitle}>파일을 업로드 (최대 10MB)</p>
-
-                <div className={`${styles.inputGroup}`}>
-                    <div>
-                        <label className={styles.label}>소유자 ID</label>
-                        <input
-                            type="text"
-                            value={ownerId}
-                            onChange={(e) => setOwnerId(e.target.value)}
-                            placeholder="소유자 ID 입력"
-                            className={styles.input}
-                        />
-                    </div>
-                </div>
 
                 <div className={styles.dropzone}>
                     <input
