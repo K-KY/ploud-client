@@ -3,8 +3,8 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {Home} from "./components/Home.tsx";
 import {Private} from "./components/Private.tsx";
 import {useEffect, useState} from "react";
-import {logout, refresh} from "./axios/UserApi.ts";
-import {userAuthStore} from "./stores/token.store.ts";
+import {refresh} from "./axios/UserApi.ts";
+import FileUploader from "./components/FileUploader.tsx";
 
 function App() {
     const [loading, setLoading] = useState(true)
@@ -17,18 +17,12 @@ function App() {
         initAuth();
     }, []);
 
-    function handleLogout() {
-        console.log("logout")
-        logout()
-        userAuthStore.getState().logout()
-    }
     if (loading) {
         return <div>Loading...</div>;
     }
 
     return (
         <>
-            <button onClick={() => handleLogout()}>logout</button>
             <BrowserRouter>
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
@@ -37,6 +31,14 @@ function App() {
                             <Home/>
                         </Private>
                     }></Route>
+
+                    <Route path={"upload"} element={
+                        <Private>
+                            <FileUploader/>
+                        </Private>
+                    }>
+
+                    </Route>
                 </Routes>
             </BrowserRouter>
         </>
