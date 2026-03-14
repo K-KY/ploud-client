@@ -1,7 +1,7 @@
 interface FileInfo {
     fileSeq: number,
-    ownerSeq: string,
     storageKey: string,
+    userSeq: number,
     title: string,
     originalFilename: string,
     size: number,

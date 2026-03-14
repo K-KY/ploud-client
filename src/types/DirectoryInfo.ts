@@ -1,7 +1,7 @@
 interface DirectoryInfo {
     dirSeq: number;
     dirName: string;
-    ownerId: string;
+    userSeq:number;
     parentSeq: number;
 }
 
