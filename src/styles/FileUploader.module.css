@@ -5,6 +5,25 @@
     padding: 2rem;
 }
 
+.backButton {
+    position: fixed;
+    top: 1.25rem;
+    left: 1.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: none;
+    background: #475569;
+    color: #e2e8f0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: background 0.2s;
+    z-index: 100;
+}
+
 .card {
     max-width: 56rem;
     margin: 0 auto;
