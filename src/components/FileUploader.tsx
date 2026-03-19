@@ -5,8 +5,10 @@ import styles from "../styles/FileUploader.module.css"
 import {getPresignedUrl} from "../axios/StorageApi.ts";
 import {postFile} from "../axios/MetadataApi.ts";
 import type {StorageInfo} from "../types/StorageInfo.ts";
+import {useNavigate} from "react-router-dom";
 
 export default function FileUploader() {
+    const navigate = useNavigate();
     const [files, setFiles] = useState<FileWithId[]>([]);
     const [uploading, setUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<Record<string, UploadStatus>>({});
@@ -179,6 +181,9 @@ export default function FileUploader() {
         }
 
         setUploading(false);
+
+
+
     };
 
 
@@ -216,6 +221,28 @@ export default function FileUploader() {
 
     return (
         <div className={styles.container}>
+            <button
+                className={styles.backButton}
+                onClick={() => navigate(-1)}
+                onMouseEnter={e => (e.currentTarget.style.background = '#64748b')}
+                onMouseLeave={e => (e.currentTarget.style.background = '#475569')}
+                title="뒤로가기"
+            >
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                >
+                    <path d="M19 12H5" />
+                    <path d="M12 19l-7-7 7-7" />
+                </svg>
+            </button>
+
             <div className={styles.card}>
                 <p className={styles.subtitle}>파일을 업로드 (최대 10MB)</p>
 
