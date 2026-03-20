@@ -44,6 +44,10 @@ export default function LoginPage() {
         }
     };
 
+    function handleSignup() {
+        navigate("/signup")
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.card}>
@@ -102,7 +106,7 @@ export default function LoginPage() {
 
                 <div className={styles.footer}>
                     계정이 없으신가요?{' '}
-                    <a href="/signup" className={styles.link}>
+                    <a onClick={() => handleSignup()} className={styles.link}>
                         회원가입
                     </a>
                 </div>
