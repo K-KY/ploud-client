@@ -11,7 +11,6 @@ export default function LoginPage() {
         userPassword: '',
     });
     const [error, setError] = useState<string>('');
-    const [loading, setLoading] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -25,11 +24,9 @@ export default function LoginPage() {
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
 
         if (!formData.userEmail || !formData.userPassword) {
             setError('이메일과 비밀번호를 모두 입력해주세요.');
-            setLoading(false);
             return;
         }
 
@@ -39,8 +36,6 @@ export default function LoginPage() {
             navigate('/')
         } catch (err) {
             setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다.');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -75,7 +70,6 @@ export default function LoginPage() {
                             onChange={handleInputChange}
                             placeholder="example@email.com"
                             className={styles.input}
-                            disabled={loading}
                         />
                     </div>
 
@@ -91,16 +85,14 @@ export default function LoginPage() {
                             onChange={handleInputChange}
                             placeholder="••••••••"
                             className={styles.input}
-                            disabled={loading}
                         />
                     </div>
 
                     <button
                         type="submit"
-                        disabled={loading}
                         className={styles.button}
                     >
-                        {loading ? '로그인 중...' : '로그인'}
+                        {'로그인'}
                     </button>
                 </form>
 
