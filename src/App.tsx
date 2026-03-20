@@ -2,20 +2,25 @@ import LoginPage from "./components/LoginPage.tsx";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {Home} from "./components/Home.tsx";
 import {Private} from "./components/Private.tsx";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {refresh} from "./axios/UserApi.ts";
 import FileUploader from "./components/FileUploader.tsx";
 import Signup from "./components/Signup.tsx";
 
 function App() {
+    const [loading, setLoading] = useState(true)
     useEffect(() => {
         const initAuth = async () => {
             await refresh();
+            await setLoading(false);
         };
 
         initAuth();
     }, []);
 
+    if (loading) {
+        return <div></div>;
+    }
 
     return (
         <>
