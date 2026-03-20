@@ -161,7 +161,7 @@ export default function FileUploader() {
         // 병렬 업로드 (동시에 최대 3개)
         const chunkSize = 3;
         for (let i = 0; i < filesToUpload.length; i += chunkSize) {
-            const chunk = filesToUpload.slice(i, i + chunkSize);
+            const chunk:FileWithId[] = filesToUpload.slice(i, i + chunkSize);
             const presignedUrls = await getPresignedUrl(chunk);
 
             // presignedUrl을 각 파일에 매핑

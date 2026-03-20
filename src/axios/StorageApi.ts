@@ -28,7 +28,7 @@ const getParentDir = async (request: StorageRequest) => {
 const getPresignedUrl = async (files: FileWithId[]) => {
     return await api.post("/storages", {
         fileNames: files.map(fileWithId => ({
-            fileName: fileWithId.file.name,
+            fileName: fileWithId.file.webkitRelativePath,
             fileId: fileWithId.id
         }))
     })
