@@ -5,6 +5,7 @@ import {Private} from "./components/Private.tsx";
 import {useEffect, useState} from "react";
 import {refresh} from "./axios/UserApi.ts";
 import FileUploader from "./components/FileUploader.tsx";
+import Signup from "./components/Signup.tsx";
 
 function App() {
     const [loading, setLoading] = useState(true)
@@ -36,6 +37,11 @@ function App() {
                         <Private>
                             <FileUploader/>
                         </Private>
+                    }>
+                    </Route>
+
+                    <Route path={"signup"} element={
+                        <Signup></Signup>
                     }>
 
                     </Route>
