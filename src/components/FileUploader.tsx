@@ -38,7 +38,7 @@ export default function FileUploader() {
                     status: 'ready',
                     message: '업로드 준비됨'
                 };
-                validFiles.push({file, id: fileId, preSignedUrl:""});
+                validFiles.push({file, id: fileId, preSignedUrl:"", storageKey:""});
             }
         });
 
@@ -142,7 +142,8 @@ export default function FileUploader() {
             originalFilename: fileWithId.file.webkitRelativePath,
             location:"",
             size:fileWithId.file.size,
-            contentType:fileWithId.file.type,
+            storageKey:fileWithId.storageKey,
+            contentType:fileWithId.file.type
         }
 
         postFile(file)
@@ -169,7 +170,8 @@ export default function FileUploader() {
                 const urlData = presignedUrls.find((item:{fileName:string, fileId:string}) => item.fileId === fileWithId.id);
                 return {
                     ...fileWithId,
-                    preSignedUrl: urlData?.preSignedUrl || urlData?.url
+                    preSignedUrl: urlData?.preSignedUrl || urlData?.url,
+                    storageKey: urlData?.storageKey,
                 };
             });
 
