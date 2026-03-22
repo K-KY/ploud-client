@@ -8,11 +8,10 @@ import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
 
 interface FileViewerProps {
-    currentDirStack:DirectoryInfo[];
     onDirChange: React.Dispatch<React.SetStateAction<DirectoryInfo[]>>;
 }
 
-const FileViewer:React.FC<FileViewerProps> = ({currentDirStack, onDirChange}) => {
+const FileViewer:React.FC<FileViewerProps> = ({onDirChange}) => {
     const [files, setFiles] = useState<FileInfo[]>([]);
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
     //undefined인 경우 사용자의 루트 디렉토리 조회
@@ -30,7 +29,6 @@ const FileViewer:React.FC<FileViewerProps> = ({currentDirStack, onDirChange}) =>
         }).then(res => {
             setFiles(res)
         });
-
     }, [currentDirSeq])
 
     //디렉토리 눌렀을 때
