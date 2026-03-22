@@ -20,7 +20,7 @@ const login = async (request: LoginForm) => {
 const refresh = async () => {
     return await api.post("/refresh")
         .then((res) => {
-            console.log('refresh success', res.data);
+            console.log('refresh success');
             userAuthStore.setState({
                 accessToken: res.data.accessToken,
                 isAuthenticated: true
