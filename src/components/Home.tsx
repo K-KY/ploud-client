@@ -6,6 +6,7 @@ import {LinearLayout} from "./LinearLayout.tsx";
 import {useNavigate} from "react-router-dom";
 import {logout} from "../axios/UserApi.ts";
 import {userAuthStore} from "../stores/token.store.ts";
+import {LocationIndicator} from "./LocationIndicator.tsx";
 
 export function Home() {
     const [currentDirStack, setCurrentDirStack] = useState<DirectoryInfo[]>([])
@@ -27,7 +28,8 @@ export function Home() {
                 <Button onClick={fileUpload} content={"파일 업로드"}/>
                 <Button onClick={handleLogout} content={"로그아웃"}/>
             </LinearLayout>
-            <FileViewer currentDirStack={currentDirStack} onDirChange={setCurrentDirStack}></FileViewer>
+            <LocationIndicator currentDirStack={currentDirStack} />
+            <FileViewer onDirChange={setCurrentDirStack}></FileViewer>
         </>
     )
 }
