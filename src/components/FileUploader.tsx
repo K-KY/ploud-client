@@ -22,9 +22,6 @@ export default function FileUploader() {
         const newStatus: Record<string, UploadStatus> = {};
 
         selectedFiles.forEach(file => {
-            if (file.name.endsWith('.m3u8')) {
-                setHls(true)
-            }
             const fileId = `${file.name}-${file.size}-${Date.now()}`;
 
             // 파일 크기 검증만 수행
@@ -139,12 +136,13 @@ export default function FileUploader() {
             }));
         }
         const file:StorageInfo = {
-            originalFilename: fileWithId.file.webkitRelativePath,
+            originalFilename: fileWithId.file.name,
             location:"",
             size:fileWithId.file.size,
             storageKey:fileWithId.storageKey,
             contentType:fileWithId.file.type
         }
+        console.log(file)
 
         postFile(file)
 
