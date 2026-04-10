@@ -51,12 +51,6 @@ export default function FileUploader() {
             [fileWithId.id]: {status: 'uploading', message: '업로드 중...', progress: 0}
         }));
 
-        const formData = new FormData();
-        formData.append('file', fileWithId.file);
-
-        if (isHls) {
-            formData.append('isHls', String(isHls));
-        }
 
         try {
             const xhr = new XMLHttpRequest();
@@ -121,7 +115,7 @@ export default function FileUploader() {
             });
 
             xhr.open('PUT', fileWithId.preSignedUrl);
-            xhr.send(formData);
+            xhr.send(fileWithId.file);
 
             xhr.onload = () => resolve();
             xhr.onerror = () => reject();
