@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {getDirs, getFiles, getParentDir} from "../axios/StorageApi.ts";
+import {getDirs, getFiles, getParentDir, getDownloadUrl} from "../axios/StorageApi.ts";
 import {BorderLayout} from "./BoarderLayout.tsx";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
@@ -12,7 +12,7 @@ interface FileViewerProps {
     onDirChange: React.Dispatch<React.SetStateAction<DirectoryInfo[]>>;
 }
 
-const FileViewer:React.FC<FileViewerProps> = ({onDirChange}) => {
+const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     const [files, setFiles] = useState<FileInfo[]>([]);
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
     //undefined인 경우 사용자의 루트 디렉토리 조회
@@ -45,30 +45,84 @@ const FileViewer:React.FC<FileViewerProps> = ({onDirChange}) => {
         }).then(res => {
             setCurrentDirSeq(res.parentSeq)
         })
-        onDirChange(prev =>prev.slice(0, -1));
+        onDirChange(prev => prev.slice(0, -1));
     }
 
-    const menuItems: ActionMenuItem[] = [
-        {
-            key: 'download',
-            label: '다운로드',
-            icon: <DirIcon />,
-            onClick: () => console.log('download Click'),
-        },
-        {
-            key: 'rename',
-            label: '이름 변경',
-            icon: <DirIcon />,
-            onClick: () => console.log('rename Click'),
-        },
-        {
-            key: 'delete',
-            label: '삭제',
-            icon: <DirIcon />,
-            danger: true,
-            onClick: () => console.log('delete Click'),
-        },
-    ];
+    function getDirMenus(dir: DirectoryInfo): ActionMenuItem[] {
+        return [
+            {
+                key: 'download',
+                label: '다운로드',
+                icon: <DirIcon/>,
+                onClick: () => downloadDir(dir),
+            },
+            {
+                key: 'rename',
+                label: '이름 변경',
+                icon: <DirIcon/>,
+                onClick: () => renameDir(dir),
+            },
+            {
+                key: 'delete',
+                label: '삭제',
+                icon: <DirIcon/>,
+                danger: true,
+                onClick: () => deleteDir(dir),
+            },
+        ];
+    }
+
+    function getFileMenus(file: FileInfo): ActionMenuItem[] {
+        return [
+            {
+                key: 'download',
+                label: '다운로드',
+                icon: <DirIcon/>,
+                onClick: () => downloadFile(file),
+            },
+            {
+                key: 'rename',
+                label: '이름 변경',
+                icon: <DirIcon/>,
+                onClick: () => renameFile(file),
+            },
+            {
+                key: 'delete',
+                label: '삭제',
+                icon: <DirIcon/>,
+                danger: true,
+                onClick: () => deleteFile(file),
+            },
+        ];
+    }
+
+    async function downloadFile(file: FileInfo) {
+        const downloadUrl = await getDownloadUrl(file);
+        const a = document.createElement('a');
+        a.href = downloadUrl.preSignedUrl;
+        a.download = file.title;
+        a.click();
+    }
+
+    function renameFile(file: FileInfo) {
+        console.log("rename file", file);
+    }
+
+    function deleteFile(file: FileInfo) {
+        console.log("delete file", file);
+    }
+
+    function downloadDir(file: DirectoryInfo) {
+        console.log("download file", file);
+    }
+
+    function renameDir(file: DirectoryInfo) {
+        console.log("rename file", file);
+    }
+
+    function deleteDir(file: DirectoryInfo) {
+        console.log("delete file", file);
+    }
 
     return (
         <div className={`${styles.fileListContainer}`}>
@@ -88,11 +142,12 @@ const FileViewer:React.FC<FileViewerProps> = ({onDirChange}) => {
                         <BorderLayout cursor={"pointer"}>
                             <DirIcon/>
                             {dir.dirName}
-                            <ActionMenu items={menuItems} />
+                            <ActionMenu items={getDirMenus(dir)}/>
 
                         </BorderLayout>
                     </a>
                 ))}
+
                 {files.map((file) => (
                     <a className={`${styles.item}`} key={file.storageKey}>
                         <BorderLayout cursor={"pointer"}>
@@ -100,7 +155,7 @@ const FileViewer:React.FC<FileViewerProps> = ({onDirChange}) => {
                             <div>
                                 {file.title} -- {file.size}
                             </div>
-                            <ActionMenu items={menuItems} />
+                            <ActionMenu items={getFileMenus(file)}/>
 
                         </BorderLayout>
                     </a>
