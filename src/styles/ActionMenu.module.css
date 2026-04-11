@@ -22,7 +22,7 @@
 
 .dropdown {
     position: absolute;
-    right: 0;
+    right: 3rem;
     top: calc(100% + 4px);
     background: #ffffff;
     border: 1px solid #e5e7eb;
