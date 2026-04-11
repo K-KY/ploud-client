@@ -3,6 +3,7 @@ import axios from "axios";
 import type {FileWithId} from "../types/FileWithId.ts";
 import {userAuthStore} from "../stores/token.store.ts";
 import {refresh} from "./UserApi.ts";
+import type {FileInfo} from "../types/FileInfo.ts";
 
 export const api = axios.create({
 
@@ -12,29 +13,49 @@ export const api = axios.create({
 
 const getDirs = async (request: StorageRequest) => {
     return await api.post("/api/v1/dirs", request)
-        .then(response => {return response.data})
+        .then(response => {
+            return response.data
+        })
 }
 
 const getFiles = async (request: StorageRequest) => {
     return await api.post("/api/v1/files", request)
-        .then(response => {return response.data})
+        .then(response => {
+            return response.data
+        })
 }
 
 const getParentDir = async (request: StorageRequest) => {
     return await api.post("/api/v1/dirs/current", request)
-        .then(response => {return response.data})
+        .then(response => {
+            return response.data
+        })
 }
 
 const getPresignedUrl = async (files: FileWithId[]) => {
     return await api.post("/storages", {
         fileNames: files.map(fileWithId => ({
-            fileName: fileWithId.file.webkitRelativePath||fileWithId.file.name,
+            fileName: fileWithId.file.webkitRelativePath || fileWithId.file.name,
             fileId: fileWithId.id
         }))
     })
         .then(response => {
             console.log(response)
-            return response.data})
+            return response.data
+        })
+}
+
+const getDownloadUrl = async (file: FileInfo) => {
+    console.log(file)
+    return await api.post("/storages/download", {
+            fileName: file.title,
+            fileId: file.fileSeq,
+            storageKey: file.storageKey,
+        }
+    ).then(response => {
+        console.log(response)
+        return response.data
+    })
 }
 
 api.interceptors.request.use(async (config) => {
@@ -52,4 +73,4 @@ api.interceptors.request.use(async (config) => {
 })
 
 
-export {getDirs, getFiles, getParentDir, getPresignedUrl}
+export {getDirs, getFiles, getParentDir, getPresignedUrl, getDownloadUrl}
