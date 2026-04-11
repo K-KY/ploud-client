@@ -1,7 +1,5 @@
 import React from 'react';
 import {LinearLayout} from './LinearLayout';
-import {ActionMenu, type ActionMenuItem} from "./ActionMenu.tsx";
-import {DirIcon} from "./DirIcon.tsx";
 
 interface BorderLayoutProps {
     children: React.ReactNode;
@@ -49,29 +47,6 @@ const BorderLayout: React.FC<BorderLayoutProps> = ({
         ...style
     };
 
-    const menuItems: ActionMenuItem[] = [
-        {
-            key: 'download',
-            label: '다운로드',
-            icon: <DirIcon />,
-            onClick: () => console.log('download Click'),
-        },
-        {
-            key: 'rename',
-            label: '이름 변경',
-            icon: <DirIcon />,
-            onClick: () => console.log('rename Click'),
-        },
-        {
-            key: 'delete',
-            label: '삭제',
-            icon: <DirIcon />,
-            danger: true,
-            onClick: () => console.log('delete Click'),
-        },
-    ];
-
-
     return (
         <div
             className={`${className}`}
@@ -85,7 +60,6 @@ const BorderLayout: React.FC<BorderLayoutProps> = ({
                 justify={justify}
             >
                 {children}
-                <ActionMenu items={menuItems} />
 
             </LinearLayout>
         </div>

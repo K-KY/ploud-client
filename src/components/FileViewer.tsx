@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {getDirs, getFiles, getParentDir} from "../axios/StorageApi.ts";
 import {BorderLayout} from "./BoarderLayout.tsx";
 import type {FileInfo} from "../types/FileInfo.ts";
@@ -6,6 +6,7 @@ import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 import styles from "../styles/FileViewer.module.css"
 import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
+import {ActionMenu, type ActionMenuItem} from "./ActionMenu.tsx";
 
 interface FileViewerProps {
     onDirChange: React.Dispatch<React.SetStateAction<DirectoryInfo[]>>;
@@ -47,6 +48,28 @@ const FileViewer:React.FC<FileViewerProps> = ({onDirChange}) => {
         onDirChange(prev =>prev.slice(0, -1));
     }
 
+    const menuItems: ActionMenuItem[] = [
+        {
+            key: 'download',
+            label: '다운로드',
+            icon: <DirIcon />,
+            onClick: () => console.log('download Click'),
+        },
+        {
+            key: 'rename',
+            label: '이름 변경',
+            icon: <DirIcon />,
+            onClick: () => console.log('rename Click'),
+        },
+        {
+            key: 'delete',
+            label: '삭제',
+            icon: <DirIcon />,
+            danger: true,
+            onClick: () => console.log('delete Click'),
+        },
+    ];
+
     return (
         <div className={`${styles.fileListContainer}`}>
             <div className={`${styles.fileList}`}>
@@ -65,6 +88,8 @@ const FileViewer:React.FC<FileViewerProps> = ({onDirChange}) => {
                         <BorderLayout cursor={"pointer"}>
                             <DirIcon/>
                             {dir.dirName}
+                            <ActionMenu items={menuItems} />
+
                         </BorderLayout>
                     </a>
                 ))}
@@ -73,9 +98,10 @@ const FileViewer:React.FC<FileViewerProps> = ({onDirChange}) => {
                         <BorderLayout cursor={"pointer"}>
                             <FileIcon/>
                             <div>
-
                                 {file.title} -- {file.size}
                             </div>
+                            <ActionMenu items={menuItems} />
+
                         </BorderLayout>
                     </a>
                 ))}
