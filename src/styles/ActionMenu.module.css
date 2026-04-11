@@ -55,7 +55,7 @@
 }
 
 .menuItem:hover {
-    background: #f9fafb;
+    background: #cacccd;
 }
 
 .menuItemDanger {
@@ -63,5 +63,5 @@
 }
 
 .menuItemDanger:hover {
-    background: #fef2f2;
+    background: #f3d5d5;
 }
