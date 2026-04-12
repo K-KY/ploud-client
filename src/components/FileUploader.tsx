@@ -130,7 +130,7 @@ export default function FileUploader() {
             }));
         }
         const file:StorageInfo = {
-            originalFilename: fileWithId.file.name,
+            originalFilename: fileWithId.file.webkitRelativePath ? fileWithId.file.webkitRelativePath : fileWithId.file.name,
             location:"",
             size:fileWithId.file.size,
             storageKey:fileWithId.storageKey,
