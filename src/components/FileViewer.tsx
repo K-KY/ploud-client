@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {getDirs, getFiles, getParentDir, getDownloadUrl} from "../axios/StorageApi.ts";
+import {getDirs, getFiles, getParentDir, getDownloadUrl, getDirDownloadUrl} from "../axios/StorageApi.ts";
 import {BorderLayout} from "./BoarderLayout.tsx";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
@@ -112,16 +112,17 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         console.log("delete file", file);
     }
 
-    function downloadDir(file: DirectoryInfo) {
-        console.log("download file", file);
+    function downloadDir(dir: DirectoryInfo) {
+        getDirDownloadUrl(dir);
+
     }
 
-    function renameDir(file: DirectoryInfo) {
-        console.log("rename file", file);
+    function renameDir(dir: DirectoryInfo) {
+        console.log("rename file", dir);
     }
 
-    function deleteDir(file: DirectoryInfo) {
-        console.log("delete file", file);
+    function deleteDir(dir: DirectoryInfo) {
+        console.log("delete file", dir);
     }
 
     return (

@@ -4,6 +4,7 @@ import type {FileWithId} from "../types/FileWithId.ts";
 import {userAuthStore} from "../stores/token.store.ts";
 import {refresh} from "./UserApi.ts";
 import type {FileInfo} from "../types/FileInfo.ts";
+import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 
 export const api = axios.create({
 
@@ -58,6 +59,14 @@ const getDownloadUrl = async (file: FileInfo) => {
     })
 }
 
+const getDirDownloadUrl = async (dir: DirectoryInfo) => {
+    const downloadUrl = "http://localhost:8081/download-zip?dirSeq=" + dir.dirSeq ;
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download =dir.dirName;
+    a.click();
+}
+
 api.interceptors.request.use(async (config) => {
     const token = userAuthStore.getState().accessToken
     if (!token) {
@@ -73,4 +82,4 @@ api.interceptors.request.use(async (config) => {
 })
 
 
-export {getDirs, getFiles, getParentDir, getPresignedUrl, getDownloadUrl}
+export {getDirs, getFiles, getParentDir, getPresignedUrl, getDownloadUrl, getDirDownloadUrl}
