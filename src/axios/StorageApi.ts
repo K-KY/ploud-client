@@ -68,18 +68,57 @@ const getDirDownloadUrl = async (dir: DirectoryInfo) => {
 }
 
 api.interceptors.request.use(async (config) => {
+
     const token = userAuthStore.getState().accessToken
     if (!token) {
         await refresh()
         config.headers.Authorization = `Bearer ${userAuthStore.getState().accessToken}`
-
     }
     if (token) {
+        console.log("tokenExist : ", token)
         config.headers.Authorization = `Bearer ${token}`
     }
 
     return config
 })
 
+api.interceptors.response.use(
+    res => res,
+    async (error) => {
+        //기존 요청
+        const originalRequest = error.config;
+
+
+        //현재 서버에서 토큰 만료시 403 반환 중
+        if (error.response?.status === 403 && !originalRequest._retry) {
+            originalRequest._retry = true;
+
+            try {
+                await refresh();
+            } catch (refreshError) {
+                console.log("refresh 실패", refreshError);
+
+                // refresh 토큰이 문제
+                userAuthStore.getState().logout();
+                return Promise.reject(refreshError);
+            }
+
+            const newToken = userAuthStore.getState().accessToken;
+            //헤더에 새 인증 토큰 추가
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+            try {
+                //api 기존 요청으로 재호출
+                return await api(originalRequest);
+            } catch (retryError) {
+                console.log("재요청 실패", retryError);
+                // api 실패
+                return Promise.reject(retryError);
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
 
 export {getDirs, getFiles, getParentDir, getPresignedUrl, getDownloadUrl, getDirDownloadUrl}
