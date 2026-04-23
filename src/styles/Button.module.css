@@ -1,42 +1,41 @@
-.button-wrapper {
+.buttonWrapper {
     display: flex;
-    justify-content: center;
     align-items: center;
-
-    padding: 24px;
 }
 
 .button {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.9rem;
+    padding: 0.75rem 1.4rem;
+    border-radius: 999px;
+    font-weight: 600;
     cursor: pointer;
-    border: none;
-    font-size: 1rem;
-    transition: background-color 0.2s;
+    border: 1px solid transparent;
+    font-size: 0.96rem;
+    letter-spacing: -0.01em;
+    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .buttonPrimary {
-    background: #3b82f6;
+    background: #1a73e8;
     color: white;
+    box-shadow: 0 12px 24px rgba(26, 115, 232, 0.24);
+}
+
+.buttonPrimary:hover {
+    background: #1765cc;
+    transform: translateY(-1px);
 }
 
 .buttonSecondary {
-    background: #4b5563;
-    color: white;
+    background: rgba(255, 255, 255, 0.86);
+    color: #3c4043;
+    border-color: #d2d8e2;
 }
 
-
-.flexColCenterGapSm {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.flexColGap1r {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+.buttonSecondary:hover {
+    background: #ffffff;
+    border-color: #bcc7d6;
 }
