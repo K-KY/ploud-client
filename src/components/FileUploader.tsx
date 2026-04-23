@@ -1,4 +1,4 @@
-import {useState, type ChangeEvent} from 'react';
+import {useState, type ChangeEvent, type InputHTMLAttributes} from 'react';
 import type {FileWithId} from "../types/FileWithId.ts";
 import type {UploadStatus} from "../types/UploadStatus.ts";
 import styles from "../styles/FileUploader.module.css"
@@ -12,9 +12,12 @@ export default function FileUploader() {
     const [files, setFiles] = useState<FileWithId[]>([]);
     const [uploading, setUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<Record<string, UploadStatus>>({});
-    const [isHls, setHls] = useState<boolean>(false);
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const directoryInputProps = {
+        webkitdirectory: "",
+        directory: "",
+    } as InputHTMLAttributes<HTMLInputElement>;
 
     const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(e.target.files || []);
@@ -218,8 +221,6 @@ export default function FileUploader() {
             <button
                 className={styles.backButton}
                 onClick={() => navigate(-1)}
-                onMouseEnter={e => (e.currentTarget.style.background = '#64748b')}
-                onMouseLeave={e => (e.currentTarget.style.background = '#475569')}
                 title="뒤로가기"
             >
                 <svg
@@ -238,6 +239,7 @@ export default function FileUploader() {
             </button>
 
             <div className={styles.card}>
+                <h1 className={styles.header}>파일 업로드</h1>
                 <p className={styles.subtitle}>파일을 업로드 (최대 10MB)</p>
 
                 <div className={styles.dropzone}>
@@ -245,8 +247,7 @@ export default function FileUploader() {
                         type="file"
                         id="fileInput"
                         multiple
-                        webkitdirectory=""
-                        directory=""
+                        {...directoryInputProps}
                         onChange={handleFileSelect}
                         style={{display: 'none'}}
                     />
@@ -268,7 +269,7 @@ export default function FileUploader() {
                             폴더 선택
                         </label>
 
-                        <div style={{color: '#6b7280'}}>또는</div>
+                        <div className={styles.helperText}>또는</div>
 
                         <label
                             htmlFor="singleFileInput"
@@ -278,20 +279,20 @@ export default function FileUploader() {
                         </label>
                     </div>
 
-                    <p style={{fontSize: '0.875rem', color: '#6b7280', marginTop: '1rem'}}>
+                    <p className={styles.helperCaption}>
                         여러 파일을 동시에 선택할 수 있습니다
                     </p>
                 </div>
 
                 {files.length > 0 && (
                     <div className={`${styles.flexColGap1r}`}>
-                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <div className={styles.fileListHeader}>
                             <div>
-                                <h2 style={{fontSize: '1.25rem', fontWeight: '600', color: '#374151'}}>
+                                <h2 className={styles.sectionTitle}>
                                     선택된 파일 ({files.length})
                                 </h2>
                                 {(successCount > 0 || errorCount > 0) && (
-                                    <p style={{fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem'}}>
+                                    <p className={styles.summaryText}>
                                         성공: {successCount} / 실패: {errorCount}
                                     </p>
                                 )}
@@ -299,14 +300,7 @@ export default function FileUploader() {
                             <button
                                 onClick={clearAll}
                                 disabled={uploading}
-                                style={{
-                                    fontSize: '0.875rem',
-                                    color: uploading ? '#9ca3af' : '#ef4444',
-                                    fontWeight: '500',
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: uploading ? 'not-allowed' : 'pointer',
-                                }}
+                                className={styles.clearButton}
                             >
                                 모두 제거
                             </button>
@@ -327,7 +321,6 @@ export default function FileUploader() {
                                                     {(fileWithId.file.size / 1024).toFixed(2)} KB
                                                     {status?.message && (
                                                         <span
-                                                            // ⭐️ getStatusColor가 styles 객체의 값을 반환함
                                                             className={getStatusColor(status.status)}
                                                             style={{marginLeft: '0.5rem'}}>
                                                             • {status.message}
@@ -363,11 +356,7 @@ export default function FileUploader() {
                         <button
                             onClick={handleUpload}
                             disabled={uploading || files.length === 0}
-                            className={`${styles.uploadButton}`}
-                            style={{
-                                background: (uploading || files.length === 0) ? '#9ca3af' : '#3b82f6',
-                                cursor: (uploading || files.length === 0) ? 'not-allowed' : 'pointer',
-                            }}
+                            className={`${styles.uploadButton} ${uploading || files.length === 0 ? styles.uploadButtonDisabled : ""}`}
                         >
                             {uploading ? '업로드 중...' : '업로드 시작'}
                         </button>
