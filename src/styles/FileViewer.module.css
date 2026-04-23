@@ -1,32 +1,118 @@
-.item {
-    display: block;
+.fileListContainer {
+    width: 100%;
+}
+
+.viewerShell {
+    overflow: visible;
+    border: 1px solid #dfe3eb;
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(12px);
+}
+
+.viewerHeader {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 8rem 3rem;
+    gap: 1rem;
     align-items: center;
-    border-radius: 0.5rem;
-    margin-bottom: 0.25rem;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-    transition: background-color 0.2s ease;
+    padding: 1rem 1.5rem;
+    background: #f8fafd;
+    border-bottom: 1px solid #e6ebf3;
+    color: #5f6368;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
-.item:hover {
-    background-color: #e5e7eb;
+.headerName {
+    grid-column: 1;
 }
 
-.itemActive {
-    background-color: #bfdbfe;
-    font-weight: 600;
+.headerMeta {
+    grid-column: 2;
 }
 
 .fileList {
-    width: 70%;
-    display: block;
+    padding: 0.75rem;
 }
 
-.fileListContainer {
+.item {
+    display: block;
+    margin-bottom: 0.35rem;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.row {
+    padding: 0.95rem 1rem !important;
+    border: 1px solid transparent !important;
+    border-radius: 1rem !important;
+    background: transparent !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.item:hover .row {
+    background: #f1f6ff !important;
+    border-color: #d8e3ff !important;
+    transform: translateY(-1px);
+}
+
+.primaryCell {
+    min-width: 0;
     display: flex;
-    flex-direction: column;
-    width: 100%;
+    align-items: center;
+    gap: 0.875rem;
+    flex: 1;
+}
+
+.iconWrap {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.9rem;
+    background: #eef3fd;
+    color: #1a73e8;
+    flex-shrink: 0;
+}
+
+.fileName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.98rem;
+    font-weight: 500;
+    color: #202124;
+}
+
+.metaCell {
+    width: 8rem;
+    flex-shrink: 0;
+    color: #5f6368;
+    font-size: 0.92rem;
+    text-align: left;
+}
+
+@media (max-width: 768px) {
+    .viewerHeader {
+        grid-template-columns: minmax(0, 1fr) 3rem;
+    }
+
+    .headerMeta,
+    .metaCell {
+        display: none;
+    }
+
+    .fileList {
+        padding: 0.5rem;
+    }
+
+    .row {
+        padding: 0.85rem 0.9rem !important;
+    }
 }
