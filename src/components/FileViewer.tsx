@@ -127,46 +127,59 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
 
     return (
         <div className={`${styles.fileListContainer}`}>
-            <div className={`${styles.fileList}`}>
-                {currentDirSeq !== null ? (
-                    <a className={`${styles.item}`} onClick={() => gotoParent()}>
-                        <BorderLayout cursor={"pointer"}>
-                            <div>
-                                <DirIcon>..</DirIcon>
-                            </div>
-                        </BorderLayout>
-                    </a>
-                ) : null}
+            <div className={styles.viewerShell}>
+                <div className={styles.viewerHeader}>
+                    <div className={styles.headerName}>이름</div>
+                    <div className={styles.headerMeta}>정보</div>
+                </div>
+                <div className={`${styles.fileList}`}>
+                    {currentDirSeq !== undefined ? (
+                        <a className={`${styles.item}`} onClick={() => gotoParent()}>
+                            <BorderLayout cursor={"pointer"} className={styles.row}>
+                                <div className={styles.primaryCell}>
+                                    <div className={styles.iconWrap}>
+                                        <DirIcon>..</DirIcon>
+                                    </div>
+                                    <div className={styles.fileName}>상위 폴더</div>
+                                </div>
+                                <div className={styles.metaCell}>이전 위치로 이동</div>
+                            </BorderLayout>
+                        </a>
+                    ) : null}
 
-                {dirs.map((dir) => (
-                    <a className={`${styles.item}`} onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
-                        <BorderLayout cursor={"pointer"}>
-                            <DirIcon/>
-                            {dir.dirName}
-                            <ActionMenu items={getDirMenus(dir)}/>
+                    {dirs.map((dir) => (
+                        <a className={`${styles.item}`} onClick={() => changeDir(dir)} key={dir.dirSeq + dir.dirName}>
+                            <BorderLayout cursor={"pointer"} className={styles.row}>
+                                <div className={styles.primaryCell}>
+                                    <div className={styles.iconWrap}>
+                                        <DirIcon/>
+                                    </div>
+                                    <div className={styles.fileName}>{dir.dirName}</div>
+                                </div>
+                                <div className={styles.metaCell}>폴더</div>
+                                <ActionMenu items={getDirMenus(dir)}/>
+                            </BorderLayout>
+                        </a>
+                    ))}
 
-                        </BorderLayout>
-                    </a>
-                ))}
-
-                {files.map((file) => (
-                    <a className={`${styles.item}`} key={file.storageKey}>
-                        <BorderLayout cursor={"pointer"}>
-                            <FileIcon/>
-                            <div>
-                                {file.title} -- {file.size}
-                            </div>
-                            <ActionMenu items={getFileMenus(file)}/>
-
-                        </BorderLayout>
-                    </a>
-                ))}
-
-
+                    {files.map((file) => (
+                        <a className={`${styles.item}`} key={file.storageKey}>
+                            <BorderLayout cursor={"pointer"} className={styles.row}>
+                                <div className={styles.primaryCell}>
+                                    <div className={styles.iconWrap}>
+                                        <FileIcon/>
+                                    </div>
+                                    <div className={styles.fileName}>{file.title}</div>
+                                </div>
+                                <div className={styles.metaCell}>{file.size}</div>
+                                <ActionMenu items={getFileMenus(file)}/>
+                            </BorderLayout>
+                        </a>
+                    ))}
+                </div>
             </div>
         </div>
     )
 }
-
 
 export {FileViewer}
