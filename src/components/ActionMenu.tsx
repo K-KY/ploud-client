@@ -38,7 +38,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({items}) => {
                 className={styles.actionButton}
                 onClick={() => setOpen(prev => !prev)}
             >
-                <img src={dotIcon}/>
+                <img src={dotIcon} alt="메뉴 열기" />
             </button>
 
             {open && (
