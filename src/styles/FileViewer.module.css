@@ -36,6 +36,7 @@
 
 .fileList {
     padding: 0.75rem;
+    scrollbar-gutter: stable;
 }
 
 .item {
