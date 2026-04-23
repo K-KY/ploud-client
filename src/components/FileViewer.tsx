@@ -7,16 +7,17 @@ import styles from "../styles/FileViewer.module.css"
 import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
 import {ActionMenu, type ActionMenuItem} from "./ActionMenu.tsx";
+import {useNavigate} from "react-router-dom";
 
 interface FileViewerProps {
-    onDirChange: React.Dispatch<React.SetStateAction<DirectoryInfo[]>>;
+    currentDirSeq?: number;
+    currentDirStack: DirectoryInfo[];
 }
 
-const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
+const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack}) => {
     const [files, setFiles] = useState<FileInfo[]>([]);
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
-    //undefined인 경우 사용자의 루트 디렉토리 조회
-    const [currentDirSeq, setCurrentDirSeq] = useState<number>();
+    const navigate = useNavigate();
 
     useEffect(() => {
         getDirs({
@@ -32,10 +33,24 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         });
     }, [currentDirSeq])
 
+    function moveToDir(dirSeq: number | undefined, dirStack: DirectoryInfo[]) {
+        const nextSearchParams = new URLSearchParams();
+
+        if (dirSeq !== undefined) {
+            nextSearchParams.set("dirSeq", String(dirSeq));
+        }
+
+        if (dirStack.length > 0) {
+            nextSearchParams.set("path", JSON.stringify(dirStack));
+        }
+
+        const nextSearch = nextSearchParams.toString();
+        navigate(nextSearch ? `/?${nextSearch}` : "/", {replace: false});
+    }
+
     //디렉토리 눌렀을 때
     function changeDir(dir: DirectoryInfo) {
-        setCurrentDirSeq(dir.dirSeq)
-        onDirChange(prev => [...prev, dir]);
+        moveToDir(dir.dirSeq, [...currentDirStack, dir]);
     }
 
     //.. 폴더 눌렀을 때
@@ -43,9 +58,8 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         getParentDir({
             parentSeq: currentDirSeq,
         }).then(res => {
-            setCurrentDirSeq(res.parentSeq)
+            moveToDir(res.parentSeq, currentDirStack.slice(0, -1));
         })
-        onDirChange(prev => prev.slice(0, -1));
     }
 
     function getDirMenus(dir: DirectoryInfo): ActionMenuItem[] {
