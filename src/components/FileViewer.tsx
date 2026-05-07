@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {getDirs, getFiles, getParentDir, getDownloadUrl, getDirDownloadUrl} from "../axios/StorageApi.ts";
+import {getDirs, getFiles, getParentDir, getDownloadUrl, getDirDownloadUrl, deleteDirs} from "../axios/StorageApi.ts";
 import {BorderLayout} from "./BoarderLayout.tsx";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
@@ -21,13 +21,13 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
 
     useEffect(() => {
         getDirs({
-            parentSeq: currentDirSeq,
+            dirSeq: currentDirSeq,
         }).then(res => {
             setDirs(res)
         });
 
         getFiles({
-            parentSeq: currentDirSeq,
+            dirSeq: currentDirSeq,
         }).then(res => {
             setFiles(res)
         });
@@ -56,7 +56,7 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
     //.. 폴더 눌렀을 때
     function gotoParent() {
         getParentDir({
-            parentSeq: currentDirSeq,
+            dirSeq: currentDirSeq,
         }).then(res => {
             moveToDir(res.parentSeq, currentDirStack.slice(0, -1));
         })
@@ -136,6 +136,7 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
     }
 
     function deleteDir(dir: DirectoryInfo) {
+        deleteDirs(dir)
         console.log("delete file", dir);
     }
 
