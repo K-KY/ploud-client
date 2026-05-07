@@ -1,5 +1,5 @@
 interface StorageRequest {
-    parentSeq:number|undefined,
+    dirSeq:number|undefined,
 }
 
 export type {StorageRequest}
