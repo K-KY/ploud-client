@@ -19,6 +19,13 @@ const getDirs = async (request: StorageRequest) => {
         })
 }
 
+const deleteDirs = async (request: StorageRequest) => {
+    return await api.patch(`/api/v1/dirs`, request)
+        .then(response => {
+            return response.data
+        })
+}
+
 const getFiles = async (request: StorageRequest) => {
     return await api.post("/api/v1/files", request)
         .then(response => {
@@ -121,4 +128,4 @@ api.interceptors.response.use(
     }
 );
 
-export {getDirs, getFiles, getParentDir, getPresignedUrl, getDownloadUrl, getDirDownloadUrl}
+export {getDirs, getFiles, getParentDir, getPresignedUrl, getDownloadUrl, getDirDownloadUrl, deleteDirs}
