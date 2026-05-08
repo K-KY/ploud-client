@@ -136,7 +136,7 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
     }
 
     function deleteDir(dir: DirectoryInfo) {
-        deleteDirs(dir)
+        deleteDirs({dirSeq: dir.dirSeq});
         console.log("delete file", dir);
     }
 
