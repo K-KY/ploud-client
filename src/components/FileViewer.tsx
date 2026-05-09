@@ -135,9 +135,16 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
         console.log("rename file", dir);
     }
 
-    function deleteDir(dir: DirectoryInfo) {
-        deleteDirs({dirSeq: dir.dirSeq});
-        console.log("delete file", dir);
+    async function deleteDir(dir: DirectoryInfo) {
+        await deleteDirs({ dirSeq: dir.dirSeq });
+
+        const [dirsRes, filesRes] = await Promise.all([
+            getDirs({ dirSeq: currentDirSeq }),
+            getFiles({ dirSeq: currentDirSeq }),
+        ]);
+
+        setDirs(dirsRes);
+        setFiles(filesRes);
     }
 
     return (
