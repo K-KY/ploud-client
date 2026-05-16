@@ -4,6 +4,7 @@ interface StorageInfo {
     contentType: string;
     storageKey: string;
     size: number;
+    fileHash: string;
 }
 
 export type {StorageInfo};

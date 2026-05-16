@@ -1,4 +1,4 @@
-import {useState, type ChangeEvent, type InputHTMLAttributes} from 'react';
+import {type ChangeEvent, type InputHTMLAttributes, useState} from 'react';
 import type {FileWithId} from "../types/FileWithId.ts";
 import type {UploadStatus} from "../types/UploadStatus.ts";
 import styles from "../styles/FileUploader.module.css"
@@ -74,6 +74,7 @@ export default function FileUploader() {
 
             xhr.addEventListener('load', () => {
                 if (xhr.status === 200) {
+                    console.log("etag = ", xhr.getResponseHeader("ETag"))
                     try {
                         setUploadStatus(prev => ({
                             ...prev,
@@ -83,6 +84,29 @@ export default function FileUploader() {
                                 progress: 100,
                             }
                         }));
+
+                        const eTagHeader = xhr.getResponseHeader("ETag");
+
+                        if (!eTagHeader) {
+                            console.error("파일 업로드 실패");
+                            // 에러 처리 로직 (업로드 실패 처리 등)
+                            return;
+                        }
+
+
+
+                        const file:StorageInfo = {
+                            originalFilename: fileWithId.file.webkitRelativePath ? fileWithId.file.webkitRelativePath : fileWithId.file.name,
+                            location:"",
+                            size:fileWithId.file.size,
+                            storageKey:fileWithId.storageKey,
+                            contentType:fileWithId.file.type,
+                            fileHash:eTagHeader.replace(/"/g, "")
+                        }
+                        console.log(file)
+
+                        postFile(file)
+
 
                     } catch (error) {
                         console.error(error);
@@ -105,6 +129,7 @@ export default function FileUploader() {
                         }
                     }));
                 }
+
             });
 
             xhr.addEventListener('error', () => {
@@ -132,17 +157,6 @@ export default function FileUploader() {
                 }
             }));
         }
-        const file:StorageInfo = {
-            originalFilename: fileWithId.file.webkitRelativePath ? fileWithId.file.webkitRelativePath : fileWithId.file.name,
-            location:"",
-            size:fileWithId.file.size,
-            storageKey:fileWithId.storageKey,
-            contentType:fileWithId.file.type
-        }
-        console.log(file)
-
-        postFile(file)
-
     });
 
     const handleUpload = async () => {
