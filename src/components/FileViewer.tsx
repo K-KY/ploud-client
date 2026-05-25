@@ -7,23 +7,28 @@ import styles from "../styles/FileViewer.module.css"
 import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
 import {ActionMenu, type ActionMenuItem} from "./ActionMenu.tsx";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 
 interface FileViewerProps {
-    currentDirSeq?: number;
-    currentDirStack: DirectoryInfo[];
+    onDirChange: React.Dispatch<React.SetStateAction<DirectoryInfo[]>>;
 }
 
-const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack}) => {
+const ROOT_DIR_SEQ = 0;
+const ROOT_PATH_TOKEN = "0";
+
+const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     const [files, setFiles] = useState<FileInfo[]>([]);
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
+    const [path, setPath] = useState<string>(ROOT_PATH_TOKEN);
     const navigate = useNavigate();
+    const params = useParams<{ dir?: string; path?: string }>();
+    const currentDirSeq = params.dir ? Number(params.dir) : ROOT_DIR_SEQ;
+    const currentPath = params.path ?? ROOT_PATH_TOKEN;
 
     useEffect(() => {
-        getDirs({
-            dirSeq: currentDirSeq,
-        }).then(res => {
-            setDirs(res)
+        getDirs(currentDirSeq, currentPath).then(res => {
+            setDirs(res.dirs)
+            setPath(res.path)
         });
 
         getFiles({
@@ -31,26 +36,16 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
         }).then(res => {
             setFiles(res)
         });
-    }, [currentDirSeq])
+    }, [currentDirSeq, currentPath])
 
-    function moveToDir(dirSeq: number | undefined, dirStack: DirectoryInfo[]) {
-        const nextSearchParams = new URLSearchParams();
-
-        if (dirSeq !== undefined) {
-            nextSearchParams.set("dirSeq", String(dirSeq));
-        }
-
-        if (dirStack.length > 0) {
-            nextSearchParams.set("path", JSON.stringify(dirStack));
-        }
-
-        const nextSearch = nextSearchParams.toString();
-        navigate(nextSearch ? `/?${nextSearch}` : "/", {replace: false});
+    function moveToDir(dirSeq: number) {
+        navigate(`/${dirSeq}/${encodeURIComponent(path)}`, {replace: false});
     }
 
     //디렉토리 눌렀을 때
     function changeDir(dir: DirectoryInfo) {
-        moveToDir(dir.dirSeq, [...currentDirStack, dir]);
+        onDirChange(prev => [...prev, dir]);
+        moveToDir(dir.dirSeq);
     }
 
     //.. 폴더 눌렀을 때
@@ -58,7 +53,14 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
         getParentDir({
             dirSeq: currentDirSeq,
         }).then(res => {
-            moveToDir(res.parentSeq, currentDirStack.slice(0, -1));
+            onDirChange(prev => prev.slice(0, -1));
+
+            if (res.parentSeq === undefined || res.parentSeq === null || res.parentSeq === ROOT_DIR_SEQ) {
+                navigate("/", {replace: false});
+                return;
+            }
+
+            navigate(`/${res.parentSeq}/${encodeURIComponent(path)}`, {replace: false});
         })
     }
 
@@ -139,11 +141,12 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
         await deleteDirs({ dirSeq: dir.dirSeq });
 
         const [dirsRes, filesRes] = await Promise.all([
-            getDirs({ dirSeq: currentDirSeq }),
+            getDirs(currentDirSeq, currentPath),
             getFiles({ dirSeq: currentDirSeq }),
         ]);
 
-        setDirs(dirsRes);
+        setDirs(dirsRes.dirs);
+        setPath(dirsRes.path);
         setFiles(filesRes);
     }
 
@@ -155,7 +158,7 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
                     <div className={styles.headerMeta}>정보</div>
                 </div>
                 <div className={`${styles.fileList}`}>
-                    {currentDirSeq !== undefined ? (
+                    {currentDirSeq !== ROOT_DIR_SEQ ? (
                         <a className={`${styles.item}`} onClick={() => gotoParent()}>
                             <BorderLayout cursor={"pointer"} className={styles.row}>
                                 <div className={styles.primaryCell}>
@@ -185,7 +188,7 @@ const FileViewer: React.FC<FileViewerProps> = ({currentDirSeq, currentDirStack})
                     ))}
 
                     {files.map((file) => (
-                        <a className={`${styles.item}`} key={file.storageKey}>
+                        <a className={`${styles.item}`} key={file.storageKey + file.fileSeq}>
                             <BorderLayout cursor={"pointer"} className={styles.row}>
                                 <div className={styles.primaryCell}>
                                     <div className={styles.iconWrap}>

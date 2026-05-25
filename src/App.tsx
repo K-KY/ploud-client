@@ -32,6 +32,11 @@ function App() {
                             <Home/>
                         </Private>
                     }></Route>
+                    <Route path="/:dir/:path" element={
+                        <Private>
+                            <Home/>
+                        </Private>
+                    }></Route>
 
                     <Route path={"upload"} element={
                         <Private>
