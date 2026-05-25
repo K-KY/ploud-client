@@ -6,15 +6,21 @@ import {refresh} from "./UserApi.ts";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 
+interface ExploreResponse {
+    dirs: DirectoryInfo[];
+    path: string;
+}
+
 export const api = axios.create({
 
     baseURL: "http://localhost:8080",
     withCredentials: true,
 })
 
-const getDirs = async (request: StorageRequest) => {
-    return await api.post("/api/v1/dirs", request)
+const getDirs = async (dirSeq: number, path: string): Promise<ExploreResponse> => {
+    return await api.get(`/api/v1/dirs/${dirSeq}/${String(path)}`)
         .then(response => {
+            console.log(response);
             return response.data
         })
 }
