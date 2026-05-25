@@ -1,35 +1,17 @@
 import {FileViewer} from "./FileViewer.tsx";
+import {useState} from "react";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 import {Button} from "./Button.tsx";
 import {LinearLayout} from "./LinearLayout.tsx";
-import {useNavigate, useSearchParams} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {logout} from "../axios/UserApi.ts";
 import {userAuthStore} from "../stores/token.store.ts";
 import {LocationIndicator} from "./LocationIndicator.tsx";
 import styles from "../styles/Home.module.css";
 
-function parseDirectoryStack(searchParams: URLSearchParams): DirectoryInfo[] {
-    const pathParam = searchParams.get("path");
-
-    if (!pathParam) {
-        return [];
-    }
-
-    try {
-        const parsed = JSON.parse(pathParam);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-        console.error("failed to parse directory path", error);
-        return [];
-    }
-}
-
 export function Home() {
+    const [currentDirStack, setCurrentDirStack] = useState<DirectoryInfo[]>([]);
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const currentDirStack = parseDirectoryStack(searchParams);
-    const dirSeqParam = searchParams.get("dirSeq");
-    const currentDirSeq = dirSeqParam ? Number(dirSeqParam) : undefined;
 
     function fileUpload() {
         navigate("upload")
@@ -56,10 +38,7 @@ export function Home() {
                 </div>
 
                 <LocationIndicator currentDirStack={currentDirStack} />
-                <FileViewer
-                    currentDirSeq={Number.isNaN(currentDirSeq) ? undefined : currentDirSeq}
-                    currentDirStack={currentDirStack}
-                />
+                <FileViewer onDirChange={setCurrentDirStack} />
             </div>
         </div>
     )
