@@ -32,11 +32,26 @@ const deleteDirs = async (request: StorageRequest) => {
         })
 }
 
-const getFiles = async (request: StorageRequest) => {
+const getFiles2 = async (request: StorageRequest) => {
     return await api.post("/api/v1/files", request)
         .then(response => {
             return response.data
         })
+}
+
+const getFiles = async (request: StorageRequest) => {
+    return await call(request.dirSeq)
+        .then(response => {
+            console.log(response);
+            return response.data
+        })
+
+    async function call(dirSeq: number | undefined) {
+        if (request.dirSeq == 0 || !request.dirSeq) {
+            return await api.get(`/api/v1/files`)
+        }
+        return await api.get(`/api/v1/files/${dirSeq}`)
+    }
 }
 
 const getParentDir = async (request: StorageRequest) => {
@@ -73,10 +88,10 @@ const getDownloadUrl = async (file: FileInfo) => {
 }
 
 const getDirDownloadUrl = async (dir: DirectoryInfo) => {
-    const downloadUrl = "http://localhost:8081/download-zip?dirSeq=" + dir.dirSeq ;
+    const downloadUrl = "http://localhost:8081/download-zip?dirSeq=" + dir.dirSeq;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download =dir.dirName;
+    a.download = dir.dirName;
     a.click();
 }
 
