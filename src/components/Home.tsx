@@ -14,7 +14,7 @@ export function Home() {
     const navigate = useNavigate();
 
     function fileUpload() {
-        navigate("upload")
+        navigate("/upload")
     }
 
     function handleLogout() {
