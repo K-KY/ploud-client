@@ -26,7 +26,7 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     const currentPath = params.path ?? ROOT_PATH_TOKEN;
 
     useEffect(() => {
-        getDirs(currentDirSeq, currentPath).then(res => {
+        getDirs(currentDirSeq).then(res => {
             setDirs(res.dirs)
             setPath(res.path)
         });
@@ -141,7 +141,7 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         await deleteDirs({ dirSeq: dir.dirSeq });
 
         const [dirsRes, filesRes] = await Promise.all([
-            getDirs(currentDirSeq, currentPath),
+            getDirs(currentDirSeq),
             getFiles({ dirSeq: currentDirSeq }),
         ]);
 
