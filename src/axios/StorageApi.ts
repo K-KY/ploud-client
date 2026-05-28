@@ -18,11 +18,27 @@ export const api = axios.create({
 })
 
 const getDirs = async (dirSeq: number, path: string): Promise<ExploreResponse> => {
-    return await api.get(`/api/v1/dirs/${dirSeq}/${String(path)}`)
+    return await call(dirSeq, path)
         .then(response => {
             console.log(response);
             return response.data
         })
+
+    async function call(dirSeq:number, path:string) {
+        let endPoint = "/api/v1/dirs"
+        if (dirSeq ==0 || dirSeq == undefined || path == "0" ) {
+            console.log(endPoint)
+            return await api.get(`/api/v1/dirs`)
+        }
+        if (dirSeq) {
+            endPoint += "/" + dirSeq + "/"
+        }
+        if (path) {
+            endPoint += path;
+        }
+        console.log(endPoint)
+        return await api.get(endPoint)
+    }
 }
 
 const deleteDirs = async (request: StorageRequest) => {
