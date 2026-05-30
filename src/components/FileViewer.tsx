@@ -8,9 +8,10 @@ import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
 import {ActionMenu, type ActionMenuItem} from "./ActionMenu.tsx";
 import {useNavigate, useParams} from "react-router-dom";
+import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
 
 interface FileViewerProps {
-    onDirChange: React.Dispatch<React.SetStateAction<DirectoryInfo[]>>;
+    onDirChange: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const ROOT_DIR_SEQ = 0;
@@ -24,11 +25,12 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     const params = useParams<{ dir?: string; path?: string }>();
     const currentDirSeq = params.dir ? Number(params.dir) : ROOT_DIR_SEQ;
     const currentPath = params.path ?? ROOT_PATH_TOKEN;
-
+    const { registerChildren, setCurrent, nameRegistry } = useDirTreeStore();
     useEffect(() => {
         getDirs(currentDirSeq).then(res => {
             setDirs(res.dirs)
             setPath(res.path)
+            registerChildren(res.dirs)
         });
 
         getFiles({
@@ -44,7 +46,7 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
 
     //디렉토리 눌렀을 때
     function changeDir(dir: DirectoryInfo) {
-        onDirChange(prev => [...prev, dir]);
+        onDirChange(dir.dirSeq);
         moveToDir(dir.dirSeq);
     }
 
@@ -53,8 +55,7 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         getParentDir({
             dirSeq: currentDirSeq,
         }).then(res => {
-            onDirChange(prev => prev.slice(0, -1));
-
+            onDirChange(res.parentSeq);
             if (res.parentSeq === undefined || res.parentSeq === null || res.parentSeq === ROOT_DIR_SEQ) {
                 navigate("/", {replace: false});
                 return;
