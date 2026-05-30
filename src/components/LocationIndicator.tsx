@@ -1,13 +1,40 @@
-import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 import styles from "../styles/LocationIndicator.module.css";
+import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
 
 type Props = {
-    currentDirStack: DirectoryInfo[];
+    currentDirStack: number;
 }
 
 export function LocationIndicator({ currentDirStack }: Props) {
-    const segments = ["내 드라이브", ...currentDirStack.map(dir => dir.dirName)];
+    const parentRegistry = useDirTreeStore(state => state.parentRegistry);
+    const nameRegistry = useDirTreeStore(state => state.nameRegistry);
+    const currentPath = useDirTreeStore(state => state.currentPath);
 
+    console.log(currentDirStack)
+    const segments = buildPath(currentDirStack, parentRegistry, nameRegistry);
+    function buildPath(
+        currentDirId: number,
+        parentRegistry: Record<number, number | null>,
+        nameRegistry: Record<number, string>
+    ) {
+        const segments: string[] = [];
+
+        let current: number | null = currentDirId;
+
+        while (current != null) {
+            const name = nameRegistry[current];
+
+            if (name) {
+                segments.unshift(decodeURIComponent(name));
+            }
+
+            current = parentRegistry[current] ?? null;
+        }
+
+        segments.unshift("내 드라이브");
+
+        return segments;
+    }
     return (
         <div className={styles.breadcrumb}>
             {segments.map((segment, index) => (
