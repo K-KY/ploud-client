@@ -55,7 +55,6 @@ const getFiles2 = async (request: StorageRequest) => {
 const getFiles = async (request: StorageRequest) => {
     return await call(request.dirSeq)
         .then(response => {
-            console.log(response);
             return response.data
         })
 
@@ -116,7 +115,6 @@ api.interceptors.request.use(async (config) => {
         config.headers.Authorization = `Bearer ${userAuthStore.getState().accessToken}`
     }
     if (token) {
-        console.log("tokenExist : ", token)
         config.headers.Authorization = `Bearer ${token}`
     }
 
