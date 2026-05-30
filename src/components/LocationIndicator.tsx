@@ -2,16 +2,16 @@ import styles from "../styles/LocationIndicator.module.css";
 import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
 
 type Props = {
-    currentDirStack: number;
+    currentDir: number;
 }
 
-export function LocationIndicator({ currentDirStack }: Props) {
+export function LocationIndicator({ currentDir }: Props) {
     const parentRegistry = useDirTreeStore(state => state.parentRegistry);
     const nameRegistry = useDirTreeStore(state => state.nameRegistry);
     const currentPath = useDirTreeStore(state => state.currentPath);
 
-    console.log(currentDirStack)
-    const segments = buildPath(currentDirStack, parentRegistry, nameRegistry);
+    console.log(currentDir)
+    const segments = buildPath(currentDir, parentRegistry, nameRegistry);
     function buildPath(
         currentDirId: number,
         parentRegistry: Record<number, number | null>,
