@@ -9,6 +9,7 @@ import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 interface ExploreResponse {
     dirs: DirectoryInfo[];
     path: string;
+    key: string;
 }
 
 export const api = axios.create({
