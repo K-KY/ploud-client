@@ -20,7 +20,6 @@ const ROOT_PATH_TOKEN = "0";
 const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     const [files, setFiles] = useState<FileInfo[]>([]);
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
-    const [path, setPath] = useState<string>(ROOT_PATH_TOKEN);
     const navigate = useNavigate();
     const params = useParams<{ dir?: string; path?: string }>();
     const currentDirSeq = params.dir ? Number(params.dir) : ROOT_DIR_SEQ;
