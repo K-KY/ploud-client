@@ -1,5 +1,13 @@
 import React, {useEffect, useState} from "react";
-import {getDirs, getFiles, getParentDir, getDownloadUrl, getDirDownloadUrl, deleteDirs} from "../axios/StorageApi.ts";
+import {
+    getDirs,
+    getFiles,
+    getParentDir,
+    getDownloadUrl,
+    getDirDownloadUrl,
+    deleteDirs,
+    upDirs
+} from "../axios/StorageApi.ts";
 import {BorderLayout} from "./BoarderLayout.tsx";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
@@ -18,50 +26,89 @@ const ROOT_DIR_SEQ = 0;
 const ROOT_PATH_TOKEN = "0";
 
 const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
-    const [files, setFiles] = useState<FileInfo[]>([]);
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
+    const [files, setFiles] = useState<FileInfo[]>([]);
+    const params = useParams<{ dir?: string; key?: string; path?: string }>();
+    const currentDirSeq = Number(params.dir ?? ROOT_DIR_SEQ);
     const navigate = useNavigate();
-    const params = useParams<{ dir?: string; path?: string }>();
-    const currentDirSeq = params.dir ? Number(params.dir) : ROOT_DIR_SEQ;
-    const currentPath = params.path ?? ROOT_PATH_TOKEN;
-    const { registerChildren, setCurrent, nameRegistry } = useDirTreeStore();
     useEffect(() => {
-        getDirs(currentDirSeq).then(res => {
-            setDirs(res.dirs)
-            setPath(res.path)
-            registerChildren(res.dirs)
-        });
+        async function load() {
 
-        getFiles({
-            dirSeq: currentDirSeq,
-        }).then(res => {
-            setFiles(res)
-        });
-    }, [currentDirSeq, currentPath])
+            // URL에 key/path가 없음
+            if (!params.key || !params.path) {
 
-    function moveToDir(dirSeq: number) {
-        navigate(`/${dirSeq}/${encodeURIComponent(path)}`, {replace: false});
-    }
+                const res = await getDirs(
+                    ROOT_DIR_SEQ,
+                    null,
+                    null
+                );
 
-    //디렉토리 눌렀을 때
-    function changeDir(dir: DirectoryInfo) {
-        onDirChange(dir.dirSeq);
-        moveToDir(dir.dirSeq);
-    }
+                navigate(
+                    `/${ROOT_DIR_SEQ}/${encodeURIComponent(res.key)}/${encodeURIComponent(res.path)}`,
+                    { replace: true }
+                );
 
-    //.. 폴더 눌렀을 때
-    function gotoParent() {
-        getParentDir({
-            dirSeq: currentDirSeq,
-        }).then(res => {
-            onDirChange(res.parentSeq);
-            if (res.parentSeq === undefined || res.parentSeq === null || res.parentSeq === ROOT_DIR_SEQ) {
-                navigate("/", {replace: false});
                 return;
             }
 
-            navigate(`/${res.parentSeq}/${encodeURIComponent(path)}`, {replace: false});
-        })
+            // URL 복원
+            const res = await getDirs(
+                currentDirSeq,
+                params.key,
+                params.path
+            );
+
+            setDirs(res.dirs);
+            useDirTreeStore.getState().registerChildren(res.dirs);
+
+            const files = await getFiles({
+                dirSeq:currentDirSeq,
+
+            });
+
+            setFiles(files);
+        }
+
+        load();
+    }, [
+        currentDirSeq,
+        params.key,
+        params.path
+    ]);
+
+    async function changeDir(dir: DirectoryInfo) {
+
+        const res = await getDirs(
+            dir.dirSeq,
+            params.key!,
+            params.path!
+        );
+
+        navigate(
+            `/${dir.dirSeq}/${encodeURIComponent(res.key)}/${encodeURIComponent(res.path)}`,
+            { replace: false }
+        );
+    }
+
+    async function gotoParent() {
+
+        const res = await upDirs(
+            currentDirSeq,
+            params.key!,
+            params.path!
+        );
+
+        const parentSeq = res.dirs[0].parentSeq;
+
+        if (!parentSeq) {
+            navigate("/");
+            return;
+        }
+
+        navigate(
+            `/${parentSeq}/${encodeURIComponent(res.key)}/${encodeURIComponent(res.path)}`,
+            { replace: false }
+        );
     }
 
     function getDirMenus(dir: DirectoryInfo): ActionMenuItem[] {
@@ -138,15 +185,14 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     }
 
     async function deleteDir(dir: DirectoryInfo) {
-        await deleteDirs({ dirSeq: dir.dirSeq });
+        await deleteDirs({dirSeq: dir.dirSeq});
 
         const [dirsRes, filesRes] = await Promise.all([
-            getDirs(currentDirSeq),
-            getFiles({ dirSeq: currentDirSeq }),
+            getDirs(currentDirSeq, params.key, params.path),
+            getFiles({dirSeq: currentDirSeq}),
         ]);
 
         setDirs(dirsRes.dirs);
-        setPath(dirsRes.path);
         setFiles(filesRes);
     }
 
@@ -208,3 +254,13 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
 }
 
 export {FileViewer}
+
+/*
+* 루트 진입시 key/path
+* api 호출시 key path를 강제
+* useEffect는 기존 데이터를 복원하는데에만 사용
+* key/path 둘중 하나라도 없으면 root 호출
+* 호출 후 반환된 key/path 로 navigate
+*
+* moveDIr에서 navigate -> useEffect에서 해당 dirSeq 참조후 디렉토리 렌더링
+* */
