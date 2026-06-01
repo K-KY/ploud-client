@@ -10,6 +10,7 @@ interface ExploreResponse {
     dirs: DirectoryInfo[];
     path: string;
     key: string;
+    current:number
 }
 
 export const api = axios.create({
@@ -18,25 +19,63 @@ export const api = axios.create({
     withCredentials: true,
 })
 
-const getDirs = async (dirSeq: number): Promise<ExploreResponse> => {
-    return await call(dirSeq)
+const getDirs = async (dirSeq: number, key: string, path: string): Promise<ExploreResponse> => {
+    return await call(dirSeq, key, path)
         .then(response => {
             console.log(response);
             return response.data
         })
 
-    async function call(dirSeq:number) {
+    async function call(dirSeq: number, key: string, path: string) {
         let endPoint = "/api/v1/dirs"
-        if (dirSeq ==0 || dirSeq == undefined) {
+        if (dirSeq == 0 || dirSeq == undefined || key == "0" || path == "0") {
             console.log(endPoint)
             return await api.get(`/api/v1/dirs`)
         }
         if (dirSeq) {
             endPoint += "/" + dirSeq
         }
-        console.log(endPoint)
+        if (key) {
+            endPoint += "/" + key
+        }
+        if (path) {
+            endPoint += "/" + path
+        }
         return await api.get(endPoint)
     }
+}
+
+const upDirs = async (dirSeq: number, key: string, path: string): Promise<ExploreResponse> => {
+    return await call(dirSeq, key, path)
+        .then(response => {
+            return response.data
+        })
+
+    async function call(dirSeq: number, key: string, path: string) {
+        let endPoint = "/api/v1/dirs/up"
+        if (dirSeq == 0 || dirSeq == undefined || key == "0" || path == "0") {
+            console.log(endPoint)
+            return await api.get(`/api/v1/dirs`)
+        }
+        if (dirSeq) {
+            endPoint += "/" + dirSeq
+        }
+        if (key) {
+            endPoint += "/" + key
+        }
+        if (path) {
+            endPoint += "/" + path
+        }
+        return await api.get(endPoint)
+    }
+}
+
+const decrypte = async (token: string): Promise<string> => {
+    return await api.get(`/api/v1/dirs/path/${token}`)
+        .then(response => {
+            console.log(response)
+            return response.data
+        })
 }
 
 const deleteDirs = async (request: StorageRequest) => {
@@ -161,4 +200,14 @@ api.interceptors.response.use(
     }
 );
 
-export {getDirs, getFiles, getParentDir, getPresignedUrl, getDownloadUrl, getDirDownloadUrl, deleteDirs}
+export {
+    getDirs,
+    getFiles,
+    getParentDir,
+    getPresignedUrl,
+    getDownloadUrl,
+    getDirDownloadUrl,
+    deleteDirs,
+    upDirs,
+    decrypte
+}
