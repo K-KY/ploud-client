@@ -24,14 +24,6 @@ const treeSyncChannel = new BroadcastChannel('DRIVE_TREE_SYNC_CHANNEL');
 
 export const useDirTreeStore = create<DirTreeStore>((set, get) => {
 
-    //스토어 생성과 동시에 Broadcast Channel 리스너 가동 (멀티탭 초고속 동기화)
-    treeSyncChannel.onmessage = (event) => {
-        const { type, dirKey, newParent } = event.data;
-        if (type === 'DIR_MOVED') {
-            get().repairRegistrySingle(dirKey, newParent);
-        }
-    };
-
     return {
         parentRegistry: {},
         nameRegistry: {},
