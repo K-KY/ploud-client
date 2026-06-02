@@ -38,6 +38,7 @@ export const useDirTreeStore = create<DirTreeStore>((set, get) => {
             children.forEach((node) => {
                 nextParentRegistry[node.dirSeq] = node.parentSeq;
                 nextNameRegistry[node.dirSeq] = node.dirName;
+                broadcastDirAdded(node.dirSeq, node.parentSeq);
             });
 
             return {
