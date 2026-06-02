@@ -34,12 +34,12 @@ export const useDirTreeStore = create<DirTreeStore>((set, get) => {
         registerChildren: (children) => set((state) => {
             const nextParentRegistry = { ...state.parentRegistry };
             const nextNameRegistry = { ...state.nameRegistry };
-
             children.forEach((node) => {
                 nextParentRegistry[node.dirSeq] = node.parentSeq;
                 nextNameRegistry[node.dirSeq] = node.dirName;
                 broadcastDirAdded(node.dirSeq, node.parentSeq);
             });
+
 
             return {
                 parentRegistry: nextParentRegistry,
@@ -123,6 +123,7 @@ treeSyncChannel.onmessage= (event) => {
 
     if (event.data.type === 'DIR_ADDED') {
         console.log('DIR_ADDED', event.data.dirKey, event.data.parent);
+        onAddDir(event.data.dirKey, event.data.parent);
         return
     }
 
@@ -130,4 +131,13 @@ treeSyncChannel.onmessage= (event) => {
         console.log('DIR_REMOVED', event.data.dirKey, event.data.parent);
         return
     }
+}
+
+function onAddDir(dirKey: number, parent: number | null) {
+        useDirTreeStore.setState((state) => ({
+            parentRegistry: {
+                ...state.parentRegistry,
+                [dirKey]: parent
+            }
+        }));
 }
