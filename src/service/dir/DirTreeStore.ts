@@ -111,3 +111,7 @@ export const useDirTreeStore = create<DirTreeStore>((set, get) => {
 export const broadcastDirMove = (dirKey: number, newParent: number | null) => {
     treeSyncChannel.postMessage({ type: 'DIR_MOVED', dirKey, newParent });
 };
+
+export const broadcastDirAdded = (dirKey: number, parent: number | null) => {
+    treeSyncChannel.postMessage({type: 'DIR_ADDED', dirKey, parent});
+}
