@@ -107,11 +107,34 @@ export const useDirTreeStore = create<DirTreeStore>((set, get) => {
     };
 });
 
-// 외부에서 호출할 수 있도록 탭A 전용 송신 함수 분리 export
-export const broadcastDirMove = (dirKey: number, newParent: number | null) => {
-    treeSyncChannel.postMessage({ type: 'DIR_MOVED', dirKey, newParent });
+//디렉토리 이동
+export const broadcastDirMove = (dirKey: number, parent: number | null) => {
+    treeSyncChannel.postMessage({ type: 'DIR_MOVED', dirKey, parent });
 };
 
+//디렉토리 탐색 또는 새로운 디렉토리 업로드 상황에 발생
 export const broadcastDirAdded = (dirKey: number, parent: number | null) => {
     treeSyncChannel.postMessage({type: 'DIR_ADDED', dirKey, parent});
+}
+
+//디렉토리 삭제
+export const broadcastDirRemoved = (dirKey: number, parent: number | null) => {
+    treeSyncChannel.postMessage({type: 'DIR_REMOVED', dirKey, parent});
+}
+
+treeSyncChannel.onmessage= (event) => {
+    if (event.data.type === 'DIR_MOVED') {
+        console.log('DIR_MOVED', event.data.dirKey, event.data.parent);
+        return
+    }
+
+    if (event.data.type === 'DIR_ADDED') {
+        console.log('DIR_ADDED', event.data.dirKey, event.data.parent);
+        return
+    }
+
+    if (event.data.type === 'DIR_REMOVED') {
+        console.log('DIR_REMOVED', event.data.dirKey, event.data.parent);
+        return
+    }
 }
