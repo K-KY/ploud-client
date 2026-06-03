@@ -211,5 +211,5 @@ export {
     getDirDownloadUrl,
     deleteDirs,
     upDirs,
-    decrypte
+    decryptPath
 }
