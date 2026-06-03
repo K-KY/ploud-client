@@ -5,6 +5,7 @@ import {userAuthStore} from "../stores/token.store.ts";
 import {refresh} from "./UserApi.ts";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
+import type {KeyAndPath} from "../types/KeyAndPath.ts";
 
 interface ExploreResponse {
     dirs: DirectoryInfo[];
@@ -19,9 +20,9 @@ export const api = axios.create({
     withCredentials: true,
 })
 
-const decryptPath = async (key:string, path:string)  => {
-    if(key || path) {
-        return;
+const decryptPath = async (key:string, path:string): Promise<KeyAndPath> => {
+    if(!(key || path)) {
+        return Promise.reject("키 또는 패스 없음")
     }
     const endpoint = `api/v1/dirs/path/${key}/${path}`
     return api.get(endpoint).then(response => {
