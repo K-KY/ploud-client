@@ -19,6 +19,16 @@ export const api = axios.create({
     withCredentials: true,
 })
 
+const decryptPath = async (key:string, path:string)  => {
+    if(key || path) {
+        return;
+    }
+    const endpoint = `api/v1/dirs/path/${key}/${path}`
+    return api.get(endpoint).then(response => {
+        console.log(response)
+        return response.data
+    });
+}
 const getDirs = async (dirSeq: number, key: string, path: string): Promise<ExploreResponse> => {
     return await call(dirSeq, key, path)
         .then(response => {
@@ -68,14 +78,6 @@ const upDirs = async (dirSeq: number, key: string, path: string): Promise<Explor
         }
         return await api.get(endPoint)
     }
-}
-
-const decrypte = async (token: string): Promise<string> => {
-    return await api.get(`/api/v1/dirs/path/${token}`)
-        .then(response => {
-            console.log(response)
-            return response.data
-        })
 }
 
 const deleteDirs = async (request: StorageRequest) => {
