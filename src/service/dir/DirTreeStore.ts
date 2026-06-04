@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type {DirectoryInfo} from "../../types/DirectoryInfo.ts";
-
+import {decryptPath} from "../../axios/StorageApi.ts";
 interface DirTreeState {
     parentRegistry: Record<number, number | null>; // 조각 모음 및 복구되는 족보 맵
     nameRegistry: Record<number, string>;          // ID -> 디렉토리 이름
@@ -99,6 +99,40 @@ export const useDirTreeStore = create<DirTreeStore>((set, get) => {
         }
     };
 });
+
+//새로고침 시 초기화된 트리 고치기
+export const repairTree = async (key: string, path: string) => {
+    const keyAndPath = await decryptPath(key, path);
+
+    const ids = keyAndPath.key
+        .split('/')
+        .map(Number);
+
+    const parentRegistry: Record<number, number | null> = {};
+
+    for (let i = 0; i < ids.length; i++) {
+        parentRegistry[ids[i]] =
+            i === 0 ? null : ids[i - 1];
+    }
+
+    const names = keyAndPath.path
+        .split('/')
+        .filter(Boolean);
+
+    const nameRegistry: Record<number, string> = {};
+
+    for (let i = 1; i < ids.length && i - 1 < names.length; i++) {
+        nameRegistry[ids[i]] = names[i - 1];
+    }
+
+    useDirTreeStore.setState({
+        parentRegistry,
+        nameRegistry,
+        currentPath: ids
+    });
+
+    return keyAndPath;
+};
 
 //디렉토리 이동
 export const broadcastDirMove = (dirKey: number, parent: number | null) => {
