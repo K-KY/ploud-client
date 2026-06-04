@@ -84,6 +84,8 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
             params.path!
         );
 
+        onDirChange(dir.dirSeq);
+
         navigate(
             `/${dir.dirSeq}/${encodeURIComponent(res.key)}/${encodeURIComponent(res.path)}`,
             { replace: false }
@@ -104,6 +106,8 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
             navigate("/");
             return;
         }
+
+        onDirChange(parentSeq);
 
         navigate(
             `/${parentSeq}/${encodeURIComponent(res.key)}/${encodeURIComponent(res.path)}`,
