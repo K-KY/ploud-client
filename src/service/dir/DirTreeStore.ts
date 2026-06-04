@@ -175,3 +175,36 @@ function onAddDir(dirKey: number, parent: number | null) {
             }
         }));
 }
+
+function isMovable(dirKey: number, parent: number): boolean {
+    //이동하는 디렉토리와 부모 디렉토리가 같은 경우
+    if (dirKey === parent) {
+        return false;
+    }
+
+    //현재 상태
+    const state = useDirTreeStore.getState();
+    //이미 방문한 노드 저장
+    const visited = new Set<number>();
+
+    //
+    let key: number | null = parent;
+
+    while (key != null) {
+        //부모중에 자기 자신이 있는경우 순환참조 이므로 false
+        if (key === dirKey) {
+            return false;
+        }
+
+        //이미 방문한 노드가 있는 경우 순환 참조이므로 false
+        if (visited.has(key)) {
+            return false;
+        }
+
+        visited.add(key);
+
+        key = state.parentRegistry[key] ?? null;
+    }
+
+    return true;
+}
