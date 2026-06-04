@@ -1,16 +1,15 @@
 import styles from "../styles/LocationIndicator.module.css";
 import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
+import {useParams} from "react-router-dom";
 
 type Props = {
     currentDir: number;
 }
 
-export function LocationIndicator({ currentDir }: Props) {
+export function LocationIndicator({currentDir}: Props) {
     const parentRegistry = useDirTreeStore(state => state.parentRegistry);
     const nameRegistry = useDirTreeStore(state => state.nameRegistry);
-    const currentPath = useDirTreeStore(state => state.currentPath);
 
-    console.log(currentDir)
     const segments = buildPath(currentDir, parentRegistry, nameRegistry);
     function buildPath(
         currentDirId: number,
@@ -32,7 +31,6 @@ export function LocationIndicator({ currentDir }: Props) {
         }
 
         segments.unshift("내 드라이브");
-
         return segments;
     }
     return (
