@@ -16,7 +16,7 @@ import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
 import {ActionMenu, type ActionMenuItem} from "./ActionMenu.tsx";
 import {useNavigate, useParams} from "react-router-dom";
-import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
+import {repairTree, useDirTreeStore} from "../service/dir/DirTreeStore.ts";
 
 interface FileViewerProps {
     onDirChange: React.Dispatch<React.SetStateAction<number>>;
@@ -31,8 +31,10 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     const params = useParams<{ dir?: string; key?: string; path?: string }>();
     const currentDirSeq = Number(params.dir ?? ROOT_DIR_SEQ);
     const navigate = useNavigate();
+
     useEffect(() => {
         async function load() {
+            repairTree(params.key, params.path)
 
             // URL에 key/path가 없음
             if (!params.key || !params.path) {
