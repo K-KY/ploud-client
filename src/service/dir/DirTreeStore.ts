@@ -101,12 +101,16 @@ export const useDirTreeStore = create<DirTreeStore>((set, get) => {
 });
 
 //새로고침 시 초기화된 트리 고치기
-export const repairTree = async (key: string, path: string) => {
+export const repairTree = async (key: string, path: string, currentDirSeq:number) => {
     const keyAndPath = await decryptPath(key, path);
 
     const ids = keyAndPath.key
         .split('/')
         .map(Number);
+
+    if (!ids.includes(currentDirSeq)&& currentDirSeq !== 0) {
+        throw new Error("Invalid Request")
+    }
 
     const parentRegistry: Record<number, number | null> = {};
 

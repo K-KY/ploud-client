@@ -2,7 +2,6 @@ import React, {useEffect, useState} from "react";
 import {
     getDirs,
     getFiles,
-    getParentDir,
     getDownloadUrl,
     getDirDownloadUrl,
     deleteDirs,
@@ -23,7 +22,6 @@ interface FileViewerProps {
 }
 
 const ROOT_DIR_SEQ = 0;
-const ROOT_PATH_TOKEN = "0";
 
 const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
@@ -34,8 +32,12 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
 
     useEffect(() => {
         async function load() {
-            repairTree(params.key, params.path)
-
+            try {
+                await repairTree(params.key, params.path, currentDirSeq);
+            } catch (e) {
+                console.error(e);
+                navigate("/");
+            }
             // URL에 key/path가 없음
             if (!params.key || !params.path) {
 

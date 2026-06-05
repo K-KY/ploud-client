@@ -1,6 +1,5 @@
 import styles from "../styles/LocationIndicator.module.css";
 import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
-import {useParams} from "react-router-dom";
 
 type Props = {
     currentDir: number;
