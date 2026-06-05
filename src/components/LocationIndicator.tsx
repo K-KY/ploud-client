@@ -1,5 +1,6 @@
 import styles from "../styles/LocationIndicator.module.css";
 import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
+import {useParams} from "react-router-dom";
 
 type Props = {
     currentDir: number;
@@ -8,8 +9,10 @@ type Props = {
 export function LocationIndicator({currentDir}: Props) {
     const parentRegistry = useDirTreeStore(state => state.parentRegistry);
     const nameRegistry = useDirTreeStore(state => state.nameRegistry);
+    const params = useParams<{ dir?: string; key?: string; path?: string }>();
 
-    const segments = buildPath(currentDir, parentRegistry, nameRegistry);
+    const segments = buildPath(Number(params.dir), parentRegistry, nameRegistry);
+
     function buildPath(
         currentDirId: number,
         parentRegistry: Record<number, number | null>,
