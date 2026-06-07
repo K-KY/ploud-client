@@ -26,40 +26,15 @@ const ROOT_DIR_SEQ = 0;
 const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
     const [files, setFiles] = useState<FileInfo[]>([]);
-    const params = useParams<{ dir?: string; key?: string; path?: string }>();
+    const params = useParams<{ dir?: string;  }>();
     const currentDirSeq = Number(params.dir ?? ROOT_DIR_SEQ);
     const navigate = useNavigate();
 
     useEffect(() => {
         async function load() {
-            try {
-                await repairTree(params.key, params.path, currentDirSeq);
-            } catch (e) {
-                console.error(e);
-                navigate("/");
-            }
-            // URL에 key/path가 없음
-            if (!params.key || !params.path) {
-
-                const res = await getDirs(
-                    ROOT_DIR_SEQ,
-                    null,
-                    null
-                );
-
-                navigate(
-                    `/${ROOT_DIR_SEQ}/${encodeURIComponent(res.key)}/${encodeURIComponent(res.path)}`,
-                    { replace: true }
-                );
-
-                return;
-            }
-
             // URL 복원
             const res = await getDirs(
-                currentDirSeq,
-                params.key,
-                params.path
+                currentDirSeq
             );
 
             setDirs(res.dirs);
@@ -76,22 +51,18 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         load();
     }, [
         currentDirSeq,
-        params.key,
-        params.path
     ]);
 
     async function changeDir(dir: DirectoryInfo) {
 
         const res = await getDirs(
             dir.dirSeq,
-            params.key!,
-            params.path!
         );
 
         onDirChange(dir.dirSeq);
 
         navigate(
-            `/${dir.dirSeq}/${encodeURIComponent(res.key)}/${encodeURIComponent(res.path)}`,
+            `/${dir.dirSeq}`,
             { replace: false }
         );
     }
@@ -100,8 +71,6 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
 
         const res = await upDirs(
             currentDirSeq,
-            params.key!,
-            params.path!
         );
 
         const parentSeq = res.dirs[0].parentSeq;
@@ -114,7 +83,7 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         onDirChange(parentSeq);
 
         navigate(
-            `/${parentSeq}/${encodeURIComponent(res.key)}/${encodeURIComponent(res.path)}`,
+            `/${parentSeq}`,
             { replace: false }
         );
     }
@@ -196,7 +165,7 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         await deleteDirs({dirSeq: dir.dirSeq});
 
         const [dirsRes, filesRes] = await Promise.all([
-            getDirs(currentDirSeq, params.key, params.path),
+            getDirs(currentDirSeq),
             getFiles({dirSeq: currentDirSeq}),
         ]);
 
