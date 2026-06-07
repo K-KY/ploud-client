@@ -32,7 +32,7 @@ function App() {
                             <Home/>
                         </Private>
                     }></Route>
-                    <Route path="/:dir/:key/:path" element={
+                    <Route path="/:dir" element={
                         <Private>
                             <Home/>
                         </Private>

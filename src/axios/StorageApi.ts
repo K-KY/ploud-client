@@ -9,8 +9,6 @@ import type {KeyAndPath} from "../types/KeyAndPath.ts";
 
 interface ExploreResponse {
     dirs: DirectoryInfo[];
-    path: string;
-    key: string;
     current:number
 }
 
@@ -30,52 +28,40 @@ const decryptPath = async (key:string, path:string): Promise<KeyAndPath> => {
         return response.data
     });
 }
-const getDirs = async (dirSeq: number, key: string, path: string): Promise<ExploreResponse> => {
-    return await call(dirSeq, key, path)
+const getDirs = async (dirSeq: number): Promise<ExploreResponse> => {
+    return await call(dirSeq, )
         .then(response => {
             console.log(response);
             return response.data
         })
 
-    async function call(dirSeq: number, key: string, path: string) {
+    async function call(dirSeq: number) {
         let endPoint = "/api/v1/dirs"
-        if (dirSeq == 0 || dirSeq == undefined || key == "0" || path == "0") {
+        if (dirSeq == 0 || dirSeq == undefined) {
             console.log(endPoint)
             return await api.get(`/api/v1/dirs`)
         }
         if (dirSeq) {
             endPoint += "/" + dirSeq
-        }
-        if (key) {
-            endPoint += "/" + key
-        }
-        if (path) {
-            endPoint += "/" + path
         }
         return await api.get(endPoint)
     }
 }
 
-const upDirs = async (dirSeq: number, key: string, path: string): Promise<ExploreResponse> => {
-    return await call(dirSeq, key, path)
+const upDirs = async (dirSeq: number): Promise<ExploreResponse> => {
+    return await call(dirSeq)
         .then(response => {
             return response.data
         })
 
-    async function call(dirSeq: number, key: string, path: string) {
+    async function call(dirSeq: number) {
         let endPoint = "/api/v1/dirs/up"
-        if (dirSeq == 0 || dirSeq == undefined || key == "0" || path == "0") {
+        if (dirSeq == 0 || dirSeq == undefined) {
             console.log(endPoint)
             return await api.get(`/api/v1/dirs`)
         }
         if (dirSeq) {
             endPoint += "/" + dirSeq
-        }
-        if (key) {
-            endPoint += "/" + key
-        }
-        if (path) {
-            endPoint += "/" + path
         }
         return await api.get(endPoint)
     }
