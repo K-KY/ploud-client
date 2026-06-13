@@ -5,7 +5,7 @@ import {userAuthStore} from "../stores/token.store.ts";
 import {refresh} from "./UserApi.ts";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
-import type {KeyAndPath} from "../types/KeyAndPath.ts";
+import type {DirHierarchyInfo} from "../types/DirHierarchyInfo.ts";
 
 interface ExploreResponse {
     dirs: DirectoryInfo[];
@@ -18,16 +18,6 @@ export const api = axios.create({
     withCredentials: true,
 })
 
-const decryptPath = async (key:string, path:string): Promise<KeyAndPath> => {
-    if(!(key || path)) {
-        return Promise.reject("키 또는 패스 없음")
-    }
-    const endpoint = `api/v1/dirs/path/${key}/${path}`
-    return api.get(endpoint).then(response => {
-        console.log(response)
-        return response.data
-    });
-}
 const getDirs = async (dirSeq: number): Promise<ExploreResponse> => {
     return await call(dirSeq, )
         .then(response => {
@@ -48,34 +38,13 @@ const getDirs = async (dirSeq: number): Promise<ExploreResponse> => {
     }
 }
 
-const upDirs = async (dirSeq: number): Promise<ExploreResponse> => {
-    return await call(dirSeq)
-        .then(response => {
-            return response.data
-        })
-
-    async function call(dirSeq: number) {
-        let endPoint = "/api/v1/dirs/up"
-        if (dirSeq == 0 || dirSeq == undefined) {
-            console.log(endPoint)
-            return await api.get(`/api/v1/dirs`)
-        }
-        if (dirSeq) {
-            endPoint += "/" + dirSeq
-        }
-        return await api.get(endPoint)
-    }
+const getDirHierarchy = async (dirSeq: number): Promise<DirHierarchyInfo[]> => {
+    return await api.get(`/api/v1/dirs/hierarchy/${dirSeq}`)
+        .then(response => response.data);
 }
 
 const deleteDirs = async (request: StorageRequest) => {
     return await api.patch(`/api/v1/dirs`, request)
-        .then(response => {
-            return response.data
-        })
-}
-
-const getFiles2 = async (request: StorageRequest) => {
-    return await api.post("/api/v1/files", request)
         .then(response => {
             return response.data
         })
@@ -191,12 +160,11 @@ api.interceptors.response.use(
 
 export {
     getDirs,
+    getDirHierarchy,
     getFiles,
     getParentDir,
     getPresignedUrl,
     getDownloadUrl,
     getDirDownloadUrl,
-    deleteDirs,
-    upDirs,
-    decryptPath
+    deleteDirs
 }
