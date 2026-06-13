@@ -1,214 +1,303 @@
-import { create } from 'zustand';
+import {create} from "zustand";
 import type {DirectoryInfo} from "../../types/DirectoryInfo.ts";
-import {decryptPath} from "../../axios/StorageApi.ts";
+import type {DirHierarchyInfo} from "../../types/DirHierarchyInfo.ts";
+
+interface DirTreeNode {
+    dirSeq: number;
+    parentDirSeq: number | null;
+    dirName: string;
+    depth: number | null;
+    children: number[];
+}
+
 interface DirTreeState {
-    parentRegistry: Record<number, number | null>; // 조각 모음 및 복구되는 족보 맵
-    nameRegistry: Record<number, string>;          // ID -> 디렉토리 이름
-    currentPath: number[];                         // 현재 위치 PK 배열
+    tree: Record<number, DirTreeNode>;
+    currentDirSeq: number;
+    currentPath: number[];
 }
 
 interface DirTreeActions {
-    setCurrent: (path: number[]) => void;
-    registerChildren: (children: DirectoryInfo[]) => void;
-    //새로고침 시 주소창의 암호화/인코딩된 경로 스트링을 받아 뼈대 맵을 복구하는 함수
-    restorePathFromUrl: (urlPathStr: string) => void;
+    setCurrent: (dirSeq: number) => void;
+    clearCurrent: () => void;
+    registerChildren: (parentDirSeq: number | null, children: DirectoryInfo[]) => void;
+    hydrateHierarchy: (hierarchy: DirHierarchyInfo[]) => void;
     validateAndRoute: () => void;
-    //다른 탭의 변경사항을 수신하여 맵을 고치는 함수
-    repairRegistrySingle: (dirKey: number, newParent: number | null) => void;
+    repairRegistrySingle: (dirSeq: number, newParent: number | null) => void;
 }
 
 type DirTreeStore = DirTreeState & DirTreeActions;
 
-// 브라우저 내부 IPC 채널 개설
-const treeSyncChannel = new BroadcastChannel('DRIVE_TREE_SYNC_CHANNEL');
+const treeSyncChannel = new BroadcastChannel("DRIVE_TREE_SYNC_CHANNEL");
 
-export const useDirTreeStore = create<DirTreeStore>((set, get) => {
+function uniqueChildren(children: number[]) {
+    return [...new Set(children)];
+}
 
-    return {
-        parentRegistry: {},
-        nameRegistry: {},
-        currentPath: [],
+function buildPathFromTree(tree: Record<number, DirTreeNode>, currentDirSeq: number) {
+    if (!currentDirSeq) {
+        return [];
+    }
 
+    const path: number[] = [];
+    const visited = new Set<number>();
+    let current: number | null = currentDirSeq;
 
-        // 평소 마우스 탐색 시 자식 리스트를 받아 조각 모음
-        registerChildren: (children) => set((state) => {
-            const nextParentRegistry = { ...state.parentRegistry };
-            const nextNameRegistry = { ...state.nameRegistry };
+    while (current != null && !visited.has(current)) {
+        visited.add(current);
+        path.unshift(current);
+        current = tree[current]?.parentDirSeq ?? null;
+    }
+
+    return path;
+}
+
+export const useDirTreeStore = create<DirTreeStore>((set, get) => ({
+    tree: {},
+    currentDirSeq: 0,
+    currentPath: [],
+
+    setCurrent: (dirSeq) =>
+        set((state) => ({
+            currentDirSeq: dirSeq,
+            currentPath: buildPathFromTree(state.tree, dirSeq),
+        })),
+
+    clearCurrent: () =>
+        set({
+            currentDirSeq: 0,
+            currentPath: [],
+        }),
+
+    registerChildren: (parentDirSeq, children) =>
+        set((state) => {
+            const nextTree = {...state.tree};
+
+            if (parentDirSeq !== null && parentDirSeq !== 0 && !nextTree[parentDirSeq]) {
+                nextTree[parentDirSeq] = {
+                    dirSeq: parentDirSeq,
+                    parentDirSeq: null,
+                    dirName: "",
+                    depth: null,
+                    children: [],
+                };
+            }
+
             children.forEach((node) => {
-                nextParentRegistry[node.dirSeq] = node.parentSeq;
-                nextNameRegistry[node.dirSeq] = node.dirName;
-                broadcastDirAdded(node.dirSeq, node.parentSeq);
+                const parentSeq = node.parentSeq ?? parentDirSeq ?? null;
+                const existing = nextTree[node.dirSeq];
+
+                nextTree[node.dirSeq] = {
+                    dirSeq: node.dirSeq,
+                    parentDirSeq: parentSeq,
+                    dirName: node.dirName,
+                    depth: existing?.depth ?? null,
+                    children: existing?.children ?? [],
+                };
+
+                if (parentSeq !== null && parentSeq !== 0) {
+                    //저장되어있는 노드를들을 꺼내거나 가본 값
+                    const parentNode = nextTree[parentSeq] ?? {
+                        dirSeq: parentSeq,
+                        parentDirSeq: null,
+                        dirName: "",
+                        depth: null,
+                        children: [],
+                    };
+
+                    nextTree[parentSeq] = {
+                        ...parentNode,
+                        children: uniqueChildren([...parentNode.children, node.dirSeq]),
+                    };
+                }
+
+                broadcastDirAdded(node.dirSeq, parentSeq);
             });
 
+            return {tree: nextTree};
+        }),
+
+    //루트 --> 현재 경로를 저장
+    hydrateHierarchy: (hierarchy) =>
+        set((state) => {
+            //트리 정렬
+            const normalized = [...hierarchy].sort((a, b) => b.depth - a.depth);
+            const nextTree = {...state.tree};
+
+            //기존 트리에 등록
+            normalized.forEach((node) => {
+                const existing = nextTree[node.dirSeq];
+                nextTree[node.dirSeq] = {
+                    dirSeq: node.dirSeq,
+                    parentDirSeq: node.parentDirSeq,
+                    dirName: node.dirName,
+                    depth: node.depth,
+                    children: existing?.children ?? [],
+                };
+            });
+
+            //
+            normalized.forEach((node, index) => {
+                const child = normalized[index + 1];
+                if (!child) {
+                    return;
+                }
+
+                const parentNode = nextTree[node.dirSeq];
+                nextTree[node.dirSeq] = {
+                    ...parentNode,
+                    children: uniqueChildren([...parentNode.children, child.dirSeq]),
+                };
+            });
+
+            const currentPath = normalized.map((node) => node.dirSeq);
+            const currentDirSeq = currentPath[currentPath.length - 1] ?? 0;
 
             return {
-                parentRegistry: nextParentRegistry,
-                nameRegistry: nextNameRegistry
+                tree: nextTree,
+                currentDirSeq,
+                currentPath,
             };
         }),
 
-        //주소창에 존재하는 암호화경로로 현재 탐색 위치 복원
-        restorePathFromUrl: (urlPathStr) => set(() => {
-            const nextParentRegistry: Record<number, number | null> = {};
-            const nextNameRegistry: Record<number, string> = {};
-            const nextCurrentPath: number[] = [];
-            console.log(urlPathStr);
-            return {
-                parentRegistry: nextParentRegistry,
-                nameRegistry: nextNameRegistry,
-                currentPath: nextCurrentPath
-            };
-        }),
+    validateAndRoute: () => {
+        const {tree, currentDirSeq} = get();
+        const nextPath = buildPathFromTree(tree, currentDirSeq);
 
-        // 족보 붕괴 검증
-        validateAndRoute: () => {
-            const { parentRegistry, currentPath } = get();
-            if (currentPath.length === 0) return;
-
-            let currentId: number | null = currentPath[currentPath.length - 1];
-            const validAncestors = new Set<number>([currentId]);
-
-            while (currentId !== null && currentId !== 0 && parentRegistry[currentId] !== undefined) {
-                currentId = parentRegistry[currentId];
-                if (currentId !== null) validAncestors.add(currentId);
-            }
-
-            const isPathValid = currentPath.every(id => validAncestors.has(id));
-
-            if (!isPathValid) {
-                // 주소창 청소 및 튕겨내기
-                window.history.pushState({}, '', '/');
-                set({ currentPath: [0], parentRegistry: {}, nameRegistry: {} });
-            }
-        },
-
-
-        //멀티탭 이슈 대응
-        // Broadcast Channel 혹은 SSE 수신 시 특정 노드 관계 수정
-        repairRegistrySingle: (dirKey, newParent) => {
-            set((state) => ({
-                parentRegistry: { ...state.parentRegistry, [dirKey]: newParent }
-            }));
-
-            // 수리 후 즉시 내가 서 있는 발판 검증
-            get().validateAndRoute();
-        },
-
-        setCurrent: (path)=>{
-            console.log(path)
+        if (currentDirSeq !== 0 && nextPath[nextPath.length - 1] !== currentDirSeq) {
+            window.history.pushState({}, "", "/");
+            set({currentDirSeq: 0, currentPath: []});
+            return;
         }
-    };
-});
 
-//새로고침 시 초기화된 트리 고치기
-export const repairTree = async (key: string, path: string, currentDirSeq:number) => {
-    const keyAndPath = await decryptPath(key, path);
+        set({currentPath: nextPath});
+    },
 
-    const ids = keyAndPath.key
-        .split('/')
-        .map(Number);
+    repairRegistrySingle: (dirSeq, newParent) =>
+        set((state) => {
+            const nextTree = {...state.tree};
+            const currentNode = nextTree[dirSeq];
 
-    if (!ids.includes(currentDirSeq)&& currentDirSeq !== 0) {
-        throw new Error("Invalid Request")
+            if (!currentNode) {
+                return state;
+            }
+
+            const oldParent = currentNode.parentDirSeq;
+
+            if (oldParent !== null && nextTree[oldParent]) {
+                nextTree[oldParent] = {
+                    ...nextTree[oldParent],
+                    children: nextTree[oldParent].children.filter((childSeq) => childSeq !== dirSeq),
+                };
+            }
+
+            nextTree[dirSeq] = {
+                ...currentNode,
+                parentDirSeq: newParent,
+            };
+
+            if (newParent !== null) {
+                const parentNode = nextTree[newParent] ?? {
+                    dirSeq: newParent,
+                    parentDirSeq: null,
+                    dirName: "",
+                    depth: null,
+                    children: [],
+                };
+
+                nextTree[newParent] = {
+                    ...parentNode,
+                    children: uniqueChildren([...parentNode.children, dirSeq]),
+                };
+            }
+
+            return {
+                tree: nextTree,
+                currentPath: buildPathFromTree(nextTree, state.currentDirSeq),
+            };
+        }),
+}));
+
+export const broadcastDirMove = (dirSeq: number, parent: number | null) => {
+    treeSyncChannel.postMessage({type: "DIR_MOVED", dirSeq, parent});
+};
+
+export const broadcastDirAdded = (dirSeq: number, parent: number | null) => {
+    treeSyncChannel.postMessage({type: "DIR_ADDED", dirSeq, parent});
+};
+
+export const broadcastDirRemoved = (dirSeq: number) => {
+    treeSyncChannel.postMessage({type: "DIR_REMOVED", dirSeq});
+};
+
+treeSyncChannel.onmessage = (event) => {
+    if (event.data.type === "DIR_MOVED") {
+        useDirTreeStore.getState().repairRegistrySingle(event.data.dirSeq, event.data.parent);
+        return;
     }
 
-    const parentRegistry: Record<number, number | null> = {};
-
-    for (let i = 0; i < ids.length; i++) {
-        parentRegistry[ids[i]] =
-            i === 0 ? null : ids[i - 1];
+    if (event.data.type === "DIR_ADDED") {
+        onAddDir(event.data.dirSeq, event.data.parent);
+        return;
     }
 
-    const names = keyAndPath.path
-        .split('/')
-        .filter(Boolean);
-
-    const nameRegistry: Record<number, string> = {};
-
-    for (let i = 1; i < ids.length && i - 1 < names.length; i++) {
-        nameRegistry[ids[i]] = names[i - 1];
+    if (event.data.type === "DIR_REMOVED") {
+        onRemoveDir(event.data.dirSeq);
     }
+};
 
-    useDirTreeStore.setState({
-        parentRegistry,
-        nameRegistry,
-        currentPath: ids
+function onAddDir(dirSeq: number, parent: number | null) {
+    useDirTreeStore.setState((state) => {
+        const nextTree = {...state.tree};
+        const existing = nextTree[dirSeq];
+
+        nextTree[dirSeq] = {
+            dirSeq,
+            parentDirSeq: parent,
+            dirName: existing?.dirName ?? "",
+            depth: existing?.depth ?? null,
+            children: existing?.children ?? [],
+        };
+
+        if (parent !== null) {
+            const parentNode = nextTree[parent] ?? {
+                dirSeq: parent,
+                parentDirSeq: null,
+                dirName: "",
+                depth: null,
+                children: [],
+            };
+
+            nextTree[parent] = {
+                ...parentNode,
+                children: uniqueChildren([...parentNode.children, dirSeq]),
+            };
+        }
+
+        return {tree: nextTree};
     });
-
-    return keyAndPath;
-};
-
-//디렉토리 이동
-export const broadcastDirMove = (dirKey: number, parent: number | null) => {
-    treeSyncChannel.postMessage({ type: 'DIR_MOVED', dirKey, parent });
-};
-
-//디렉토리 탐색 또는 새로운 디렉토리 업로드 상황에 발생
-export const broadcastDirAdded = (dirKey: number, parent: number | null) => {
-    treeSyncChannel.postMessage({type: 'DIR_ADDED', dirKey, parent});
 }
 
-//디렉토리 삭제
-export const broadcastDirRemoved = (dirKey: number, parent: number | null) => {
-    treeSyncChannel.postMessage({type: 'DIR_REMOVED', dirKey, parent});
-}
+function onRemoveDir(dirSeq: number) {
+    useDirTreeStore.setState((state) => {
+        const nextTree = {...state.tree};
+        const target = nextTree[dirSeq];
 
-treeSyncChannel.onmessage= (event) => {
-    if (event.data.type === 'DIR_MOVED') {
-        console.log('DIR_MOVED', event.data.dirKey, event.data.parent);
-        return
-    }
-
-    if (event.data.type === 'DIR_ADDED') {
-        console.log('DIR_ADDED', event.data.dirKey, event.data.parent);
-        onAddDir(event.data.dirKey, event.data.parent);
-        return
-    }
-
-    if (event.data.type === 'DIR_REMOVED') {
-        console.log('DIR_REMOVED', event.data.dirKey, event.data.parent);
-        return
-    }
-}
-
-function onAddDir(dirKey: number, parent: number | null) {
-        useDirTreeStore.setState((state) => ({
-            parentRegistry: {
-                ...state.parentRegistry,
-                [dirKey]: parent
-            }
-        }));
-}
-
-function isMovable(dirKey: number, parent: number): boolean {
-    //이동하는 디렉토리와 부모 디렉토리가 같은 경우
-    if (dirKey === parent) {
-        return false;
-    }
-
-    //현재 상태
-    const state = useDirTreeStore.getState();
-    //이미 방문한 노드 저장
-    const visited = new Set<number>();
-
-    //
-    let key: number | null = parent;
-
-    while (key != null) {
-        //부모중에 자기 자신이 있는경우 순환참조 이므로 false
-        if (key === dirKey) {
-            return false;
+        if (!target) {
+            return state;
         }
 
-        //이미 방문한 노드가 있는 경우 순환 참조이므로 false
-        if (visited.has(key)) {
-            return false;
+        if (target.parentDirSeq !== null && nextTree[target.parentDirSeq]) {
+            nextTree[target.parentDirSeq] = {
+                ...nextTree[target.parentDirSeq],
+                children: nextTree[target.parentDirSeq].children.filter((childSeq) => childSeq !== dirSeq),
+            };
         }
 
-        visited.add(key);
+        delete nextTree[dirSeq];
 
-        key = state.parentRegistry[key] ?? null;
-    }
-
-    return true;
+        return {
+            tree: nextTree,
+            currentPath: buildPathFromTree(nextTree, state.currentDirSeq),
+        };
+    });
 }
