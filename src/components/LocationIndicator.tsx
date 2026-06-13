@@ -1,40 +1,16 @@
 import styles from "../styles/LocationIndicator.module.css";
 import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
-import {useParams} from "react-router-dom";
+export function LocationIndicator() {
+    const tree = useDirTreeStore((state) => state.tree);
+    const currentPath = useDirTreeStore((state) => state.currentPath);
 
-type Props = {
-    currentDir: number;
-}
+    const segments = [
+        "내 드라이브",
+        ...currentPath
+            .map((dirSeq) => tree[dirSeq]?.dirName ?? "")
+            .filter((dirName) => dirName.trim().length > 0),
+    ];
 
-export function LocationIndicator({currentDir}: Props) {
-    const parentRegistry = useDirTreeStore(state => state.parentRegistry);
-    const nameRegistry = useDirTreeStore(state => state.nameRegistry);
-    const params = useParams<{ dir?: string; key?: string; path?: string }>();
-
-    const segments = buildPath(Number(params.dir), parentRegistry, nameRegistry);
-
-    function buildPath(
-        currentDirId: number,
-        parentRegistry: Record<number, number | null>,
-        nameRegistry: Record<number, string>
-    ) {
-        const segments: string[] = [];
-
-        let current: number | null = currentDirId;
-
-        while (current != null) {
-            const name = nameRegistry[current];
-
-            if (name) {
-                segments.unshift(decodeURIComponent(name));
-            }
-
-            current = parentRegistry[current] ?? null;
-        }
-
-        segments.unshift("내 드라이브");
-        return segments;
-    }
     return (
         <div className={styles.breadcrumb}>
             {segments.map((segment, index) => (

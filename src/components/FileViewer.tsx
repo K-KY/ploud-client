@@ -2,10 +2,10 @@ import React, {useEffect, useState} from "react";
 import {
     getDirs,
     getFiles,
+    getDirHierarchy,
     getDownloadUrl,
     getDirDownloadUrl,
-    deleteDirs,
-    upDirs
+    deleteDirs
 } from "../axios/StorageApi.ts";
 import {BorderLayout} from "./BoarderLayout.tsx";
 import type {FileInfo} from "../types/FileInfo.ts";
@@ -15,52 +15,59 @@ import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
 import {ActionMenu, type ActionMenuItem} from "./ActionMenu.tsx";
 import {useNavigate, useParams} from "react-router-dom";
-import {repairTree, useDirTreeStore} from "../service/dir/DirTreeStore.ts";
-
-interface FileViewerProps {
-    onDirChange: React.Dispatch<React.SetStateAction<number>>;
-}
+import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
 
 const ROOT_DIR_SEQ = 0;
 
-const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
+const FileViewer: React.FC = () => {
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
     const [files, setFiles] = useState<FileInfo[]>([]);
     const params = useParams<{ dir?: string;  }>();
-    const currentDirSeq = Number(params.dir ?? ROOT_DIR_SEQ);
+    const parsedDirSeq = Number(params.dir ?? ROOT_DIR_SEQ);
+    const currentDirSeq = Number.isNaN(parsedDirSeq) ? ROOT_DIR_SEQ : parsedDirSeq;
     const navigate = useNavigate();
+    //탐색 트리
+    const registerChildren = useDirTreeStore((state) => state.registerChildren);
+    //현재 경로
+    const hydrateHierarchy = useDirTreeStore((state) => state.hydrateHierarchy);
+    //트리 초기화 함수
+    const clearCurrent = useDirTreeStore((state) => state.clearCurrent);
+    //현재 경로
+    const currentPath = useDirTreeStore((state) => state.currentPath);
 
     useEffect(() => {
         async function load() {
-            // URL 복원
-            const res = await getDirs(
-                currentDirSeq
-            );
+            const [dirRes, fileRes, hierarchyRes] = await Promise.all([
+                getDirs(currentDirSeq),
+                getFiles({
+                    dirSeq: currentDirSeq,
+                }),
+                currentDirSeq === ROOT_DIR_SEQ ? Promise.resolve(null) : getDirHierarchy(currentDirSeq),
+            ]);
 
-            setDirs(res.dirs);
-            useDirTreeStore.getState().registerChildren(res.dirs);
+            setDirs(dirRes.dirs);
+            registerChildren(currentDirSeq === ROOT_DIR_SEQ ? null : currentDirSeq, dirRes.dirs);
 
-            const files = await getFiles({
-                dirSeq:currentDirSeq,
+            if (hierarchyRes) {
+                //경로 등록
+                hydrateHierarchy(hierarchyRes);
+            } else {
+                //만약 없으면 루트
+                clearCurrent();
+            }
 
-            });
-
-            setFiles(files);
+            setFiles(fileRes);
         }
 
         load();
     }, [
         currentDirSeq,
+        clearCurrent,
+        hydrateHierarchy,
+        registerChildren,
     ]);
 
-    async function changeDir(dir: DirectoryInfo) {
-
-        const res = await getDirs(
-            dir.dirSeq,
-        );
-
-        onDirChange(dir.dirSeq);
-
+    function changeDir(dir: DirectoryInfo) {
         navigate(
             `/${dir.dirSeq}`,
             { replace: false }
@@ -68,19 +75,12 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
     }
 
     async function gotoParent() {
+        const parentSeq = currentPath.length > 1 ? currentPath[currentPath.length - 2] : ROOT_DIR_SEQ;
 
-        const res = await upDirs(
-            currentDirSeq,
-        );
-
-        const parentSeq = res.dirs[0].parentSeq;
-
-        if (!parentSeq) {
+        if (!parentSeq || parentSeq === ROOT_DIR_SEQ) {
             navigate("/");
             return;
         }
-
-        onDirChange(parentSeq);
 
         navigate(
             `/${parentSeq}`,
@@ -170,6 +170,7 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
         ]);
 
         setDirs(dirsRes.dirs);
+        registerChildren(currentDirSeq === ROOT_DIR_SEQ ? null : currentDirSeq, dirsRes.dirs);
         setFiles(filesRes);
     }
 
@@ -231,13 +232,3 @@ const FileViewer: React.FC<FileViewerProps> = ({onDirChange}) => {
 }
 
 export {FileViewer}
-
-/*
-* 루트 진입시 key/path
-* api 호출시 key path를 강제
-* useEffect는 기존 데이터를 복원하는데에만 사용
-* key/path 둘중 하나라도 없으면 root 호출
-* 호출 후 반환된 key/path 로 navigate
-*
-* moveDIr에서 navigate -> useEffect에서 해당 dirSeq 참조후 디렉토리 렌더링
-* */
