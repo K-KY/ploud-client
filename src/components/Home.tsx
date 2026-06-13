@@ -1,5 +1,4 @@
 import {FileViewer} from "./FileViewer.tsx";
-import {useState} from "react";
 import {Button} from "./Button.tsx";
 import {LinearLayout} from "./LinearLayout.tsx";
 import {useNavigate} from "react-router-dom";
@@ -9,7 +8,6 @@ import {LocationIndicator} from "./LocationIndicator.tsx";
 import styles from "../styles/Home.module.css";
 
 export function Home() {
-    const [currentDir, setCurrentDir] = useState<number>(0);
     const navigate = useNavigate();
 
     function fileUpload() {
@@ -36,8 +34,8 @@ export function Home() {
                     </LinearLayout>
                 </div>
 
-                <LocationIndicator currentDir={currentDir} />
-                <FileViewer onDirChange={setCurrentDir} />
+                <LocationIndicator />
+                <FileViewer />
             </div>
         </div>
     )
