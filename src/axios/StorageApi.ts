@@ -12,6 +12,16 @@ interface ExploreResponse {
     current:number
 }
 
+interface MoveDirRequest {
+    dirSeq: number;
+    targetSeq: number | null;
+}
+
+interface MoveFilesRequest {
+    targetDirSeq: number | null;
+    files: FileInfo[];
+}
+
 export const api = axios.create({
 
     baseURL: "http://localhost:8080",
@@ -50,6 +60,16 @@ const deleteDirs = async (request: StorageRequest) => {
         })
 }
 
+const moveDir = async (request: MoveDirRequest): Promise<DirectoryInfo> => {
+    return await api.patch("/api/v1/dirs/move", request)
+        .then(response => response.data)
+}
+
+const moveFiles = async (request: MoveFilesRequest) => {
+    return await api.patch("/api/v1/files", request)
+        .then(response => response.data)
+}
+
 const getFiles = async (request: StorageRequest) => {
     return await call(request.dirSeq)
         .then(response => {
@@ -74,7 +94,7 @@ const getParentDir = async (request: StorageRequest) => {
 const getPresignedUrl = async (files: FileWithId[]) => {
     return await api.post("/storages", {
         fileNames: files.map(fileWithId => ({
-            fileName: fileWithId.file.webkitRelativePath || fileWithId.file.name,
+            fileName: fileWithId.relativePath || fileWithId.file.webkitRelativePath || fileWithId.file.name,
             fileId: fileWithId.id
         }))
     })
@@ -166,5 +186,7 @@ export {
     getPresignedUrl,
     getDownloadUrl,
     getDirDownloadUrl,
-    deleteDirs
+    deleteDirs,
+    moveDir,
+    moveFiles
 }
