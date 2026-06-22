@@ -61,6 +61,18 @@
     transform: translateY(-1px);
 }
 
+.dropTarget .row {
+    background: #e8f0fe !important;
+    border-color: #1a73e8 !important;
+    transform: translateY(-1px);
+}
+
+.externalDragOver {
+    outline: 2px dashed #1a73e8;
+    outline-offset: 0.5rem;
+    border-radius: 1.5rem;
+}
+
 .primaryCell {
     min-width: 0;
     display: flex;
