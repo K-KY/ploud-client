@@ -16,3 +16,4 @@ COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
+#kyuyoung@KYUYOUNGui-MacBookPro ploud % docker buildx build --platform linux/amd64,linux/arm64 -t rlarbdud/ploud-front:0.0.1 -t rlarbdud/ploud-front:latest --push .
