@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import styles from '../styles/Signup.module.css';
+import {signUp, verifySignUp} from "../axios/UserApi.ts";
+import {Link, useSearchParams} from "react-router-dom";
 
 interface SignupRequest {
     userName: string;
@@ -7,7 +9,10 @@ interface SignupRequest {
     password: string;
 }
 
+type SignupStatus = 'form' | 'emailSent' | 'verifying' | 'success' | 'failure';
+
 const Signup = () => {
+    const [searchParams] = useSearchParams();
     const [form, setForm] = useState<SignupRequest>({
         userName: '',
         userEmail: '',
@@ -16,7 +21,33 @@ const Signup = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [status, setStatus] = useState<SignupStatus>('form');
+    const [verificationMessage, setVerificationMessage] = useState('');
+
+    useEffect(() => {
+        const tokenParam = searchParams.get('token');
+
+        if (!tokenParam) {
+            return;
+        }
+
+        const token = tokenParam;
+
+        async function verifyEmailToken() {
+            setStatus('verifying');
+            setVerificationMessage('');
+
+            try {
+                await verifySignUp(token);
+                setStatus('success');
+            } catch (err) {
+                setStatus('failure');
+                setVerificationMessage(err instanceof Error ? err.message : '가입 인증에 실패했습니다.');
+            }
+        }
+
+        verifyEmailToken();
+    }, [searchParams]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -44,15 +75,8 @@ const Signup = () => {
         setError(null);
 
         try {
-            fetch('http://localhost:8080/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
-            });
-
-            alert("이메일이 발송 되었습니다.")
-
-            setSuccess(true);
+            await signUp(form);
+            setStatus('emailSent');
         } catch (err) {
             setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
         } finally {
@@ -60,17 +84,62 @@ const Signup = () => {
         }
     };
 
-    if (success) {
+    if (status === 'emailSent') {
+        return (
+            <div className={styles.wrapper}>
+                <div className={styles.card}>
+                    <div className={styles.mailIcon}>@</div>
+                    <h2 className={styles.successTitle}>인증 메일을 보냈습니다</h2>
+                    <p className={styles.successMessage}>
+                        입력한 이메일의 인증 버튼을 눌러 회원가입을 완료해주세요.
+                    </p>
+                    <Link to="/login" className={styles.loginLink}>로그인 화면으로 이동</Link>
+                </div>
+            </div>
+        );
+    }
+
+    if (status === 'verifying') {
+        return (
+            <div className={styles.wrapper}>
+                <div className={styles.card}>
+                    <div className={styles.successIcon}>
+                        <span className={styles.spinner} />
+                    </div>
+                    <h2 className={styles.successTitle}>이메일을 인증하고 있습니다</h2>
+                    <p className={styles.successMessage}>
+                        잠시만 기다려주세요.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (status === 'success') {
         return (
             <div className={styles.wrapper}>
                 <div className={styles.card}>
                     <div className={styles.successIcon}>✓</div>
                     <h2 className={styles.successTitle}>가입 완료!</h2>
                     <p className={styles.successMessage}>
-                        환영합니다, {form.userName}님.<br />
                         로그인 후 서비스를 이용해주세요.
                     </p>
-                    <a href="/login" className={styles.loginLink}>로그인 하러 가기</a>
+                    <Link to="/login" className={styles.loginLink}>로그인 하러 가기</Link>
+                </div>
+            </div>
+        );
+    }
+
+    if (status === 'failure') {
+        return (
+            <div className={styles.wrapper}>
+                <div className={styles.card}>
+                    <div className={styles.failureIcon}>!</div>
+                    <h2 className={styles.successTitle}>가입 실패</h2>
+                    <p className={styles.successMessage}>
+                        {verificationMessage || '인증 링크가 만료되었거나 유효하지 않습니다.'}
+                    </p>
+                    <Link to="/signup" className={styles.loginLink}>다시 회원가입하기</Link>
                 </div>
             </div>
         );
@@ -213,7 +282,7 @@ const Signup = () => {
 
                 <p className={styles.loginText}>
                     이미 계정이 있으신가요?{' '}
-                    <a href="/login" className={styles.loginAnchor}>로그인</a>
+                    <Link to="/login" className={styles.loginAnchor}>로그인</Link>
                 </p>
             </div>
         </div>
@@ -221,3 +290,4 @@ const Signup = () => {
 };
 
 export default Signup;
+export type {SignupRequest}

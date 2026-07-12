@@ -1,10 +1,11 @@
 import axios from "axios";
 import type {LoginForm} from "../types/LoginForm.ts";
 import {userAuthStore} from "../stores/token.store.ts";
+import type {SignupRequest} from "../components/Signup.tsx";
 
 export const api = axios.create({
 
-    baseURL: "http://localhost:8080",
+    baseURL: "https://kky.tail0a6d17.ts.net/ploud/api",
     withCredentials: true,
 })
 
@@ -15,6 +16,18 @@ const login = async (request: LoginForm) => {
                 accessToken: res.data.accessToken,
             })
         });
+}
+
+const signUp = async (form:SignupRequest) => {
+    return await api.post("/signup", form)
+}
+
+const verifySignUp = async (token: string) => {
+    return await api.get("/signup", {
+        params: {
+            token,
+        },
+    })
 }
 
 const refresh = async () => {
@@ -34,4 +47,4 @@ const logout = async () => {
     return await api.post("/logout")
 }
 
-export {login, refresh, logout}
+export {login, signUp, verifySignUp, refresh, logout}
