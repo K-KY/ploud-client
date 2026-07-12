@@ -4,7 +4,7 @@ import {userAuthStore} from "../stores/token.store.ts";
 import {refresh} from "./UserApi.ts";
 
 const api = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: "https://kky.tail0a6d17.ts.net/ploud/api",
     withCredentials: true
 })
 const postFile = async (request: StorageInfo) => {

@@ -24,7 +24,7 @@ interface MoveFilesRequest {
 
 export const api = axios.create({
 
-    baseURL: "http://localhost:8080",
+    baseURL: "https://kky.tail0a6d17.ts.net/ploud/api",
     withCredentials: true,
 })
 
