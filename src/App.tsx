@@ -24,7 +24,7 @@ function App() {
 
     return (
         <>
-            <BrowserRouter>
+            <BrowserRouter basename="/ploud">
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/" element={
