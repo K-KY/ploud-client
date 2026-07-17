@@ -14,12 +14,19 @@ export function Home() {
         navigate("/upload")
     }
 
-    function handleLogout() {
-        console.log("logout")
-        logout()
-        userAuthStore.getState().logout()
-    }
+    async function handleLogout() {
+        try {
+            await logout();
 
+            userAuthStore.getState().logout();
+
+            localStorage.removeItem("accessToken");
+
+            window.location.replace("/ploud/login");
+        } catch (error) {
+            console.error("로그아웃 실패:", error);
+        }
+    }
     return (
         <div className={styles.page}>
             <div className={styles.shell}>
