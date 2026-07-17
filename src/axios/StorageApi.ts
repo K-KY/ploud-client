@@ -19,7 +19,9 @@ interface MoveDirRequest {
 
 interface MoveFilesRequest {
     targetDirSeq: number | null;
-    files: FileInfo[];
+    files: {
+        fileSeq: number;
+    }[];
 }
 
 export const api = axios.create({

@@ -32,7 +32,7 @@ type InternalDragPayload =
     }
     | {
         kind: "file";
-        file: FileInfo;
+        fileSeq: number;
     };
 
 const FileViewer: React.FC = () => {
@@ -129,7 +129,7 @@ const FileViewer: React.FC = () => {
     function handleFileDragStart(event: React.DragEvent, file: FileInfo) {
         const payload: InternalDragPayload = {
             kind: "file",
-            file,
+            fileSeq: file.fileSeq,
         };
 
         event.dataTransfer.effectAllowed = "move";
@@ -190,7 +190,7 @@ const FileViewer: React.FC = () => {
         if (payload.kind === "file") {
             await moveFiles({
                 targetDirSeq: targetSeq,
-                files: [payload.file],
+                files: [{fileSeq: payload.fileSeq}],
             });
 
             await refreshCurrentDir();
