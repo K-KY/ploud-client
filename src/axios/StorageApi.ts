@@ -24,6 +24,16 @@ interface MoveFilesRequest {
     }[];
 }
 
+interface RenameDirRequest {
+    dirSeq: number;
+    dirName: string;
+}
+
+interface RenameFileRequest {
+    fileSeq: number;
+    title: string;
+}
+
 export const api = axios.create({
 
     baseURL: "https://kky.tail0a6d17.ts.net/ploud/api",
@@ -62,8 +72,24 @@ const deleteDirs = async (request: StorageRequest) => {
         })
 }
 
+const renameDir = async (request: RenameDirRequest): Promise<DirectoryInfo> => {
+    return await api.patch("/api/v1/dirs/name", request)
+        .then(response => response.data)
+}
+
 const moveDir = async (request: MoveDirRequest): Promise<DirectoryInfo> => {
     return await api.patch("/api/v1/dirs/move", request)
+        .then(response => response.data)
+}
+
+const deleteFiles = async (fileSeq: number) => {
+    return await api.delete("/api/v1/files", {
+        data: {fileSeq},
+    }).then(response => response.data)
+}
+
+const renameFile = async (request: RenameFileRequest): Promise<FileInfo> => {
+    return await api.patch("/api/v1/files/name", request)
         .then(response => response.data)
 }
 
@@ -121,6 +147,7 @@ const getDownloadUrl = async (file: FileInfo) => {
 
 const getDirDownloadUrl = async (dir: DirectoryInfo) => {
     const downloadUrl = "http://localhost:8081/download-zip?dirSeq=" + dir.dirSeq;
+    // const downloadUrl = "https://kky.tail0a6d17.ts.net/ploud/api/download-zip?dirSeq=" + dir.dirSeq;
     const a = document.createElement('a');
     a.href = downloadUrl;
     a.download = dir.dirName;
@@ -189,6 +216,9 @@ export {
     getDownloadUrl,
     getDirDownloadUrl,
     deleteDirs,
+    renameDir,
     moveDir,
+    deleteFiles,
+    renameFile,
     moveFiles
 }

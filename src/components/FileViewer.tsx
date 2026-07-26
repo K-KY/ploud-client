@@ -6,7 +6,10 @@ import {
     getDownloadUrl,
     getDirDownloadUrl,
     deleteDirs,
+    renameDir as renameDirApi,
     moveDir,
+    deleteFiles,
+    renameFile as renameFileApi,
     moveFiles
 } from "../axios/StorageApi.ts";
 import {BorderLayout} from "./BoarderLayout.tsx";
@@ -354,12 +357,29 @@ const FileViewer: React.FC = () => {
         a.click();
     }
 
-    function renameFile(file: FileInfo) {
-        console.log("rename file", file);
+    async function renameFile(file: FileInfo) {
+        const nextName = window.prompt("변경할 파일 이름을 입력하세요.", file.title);
+
+        if (!nextName || nextName.trim() === "" || nextName === file.title) {
+            return;
+        }
+
+        await renameFileApi({
+            fileSeq: file.fileSeq,
+            title: nextName.trim(),
+        });
+        await refreshCurrentDir();
     }
 
-    function deleteFile(file: FileInfo) {
-        console.log("delete file", file);
+    async function deleteFile(file: FileInfo) {
+        const ok = window.confirm(`'${file.title}' 파일을 삭제할까요?`);
+
+        if (!ok) {
+            return;
+        }
+
+        await deleteFiles(file.fileSeq);
+        await refreshCurrentDir();
     }
 
     function downloadDir(dir: DirectoryInfo) {
@@ -367,21 +387,29 @@ const FileViewer: React.FC = () => {
 
     }
 
-    function renameDir(dir: DirectoryInfo) {
-        console.log("rename file", dir);
+    async function renameDir(dir: DirectoryInfo) {
+        const nextName = window.prompt("변경할 디렉토리 이름을 입력하세요.", dir.dirName);
+
+        if (!nextName || nextName.trim() === "" || nextName === dir.dirName) {
+            return;
+        }
+
+        await renameDirApi({
+            dirSeq: dir.dirSeq,
+            dirName: nextName.trim(),
+        });
+        await refreshCurrentDir();
     }
 
     async function deleteDir(dir: DirectoryInfo) {
+        const ok = window.confirm(`'${dir.dirName}' 디렉토리를 삭제할까요?`);
+
+        if (!ok) {
+            return;
+        }
+
         await deleteDirs({dirSeq: dir.dirSeq});
-
-        const [dirsRes, filesRes] = await Promise.all([
-            getDirs(currentDirSeq),
-            getFiles({dirSeq: currentDirSeq}),
-        ]);
-
-        setDirs(dirsRes.dirs);
-        registerChildren(currentDirSeq === ROOT_DIR_SEQ ? null : currentDirSeq, dirsRes.dirs);
-        setFiles(filesRes);
+        await refreshCurrentDir();
     }
 
     return (
