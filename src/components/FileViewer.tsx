@@ -18,27 +18,17 @@ import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 import styles from "../styles/FileViewer.module.css"
 import {DirIcon} from "./DirIcon.tsx";
 import {FileIcon} from "./FileIcon.tsx";
-import {ActionMenu, type ActionMenuItem} from "./ActionMenu.tsx";
+import {ActionMenu} from "./ActionMenu.tsx";
 import {useNavigate, useParams} from "react-router-dom";
 import {useDirTreeStore} from "../service/dir/DirTreeStore.ts";
 import {extractDroppedFiles, uploadDroppedFiles} from "../service/upload/uploadDroppedFiles.ts";
+import type {ActionMenuItem} from "../types/ActionMenuTypes.ts";
+import type {FileViewerProps, InternalDragPayload} from "../types/FileViewerTypes.ts";
 
 const ROOT_DIR_SEQ = 0;
 const INTERNAL_DRAG_MIME = "application/x-ploud-item";
 
-type InternalDragPayload =
-    | {
-        kind: "directory";
-        dirSeq: number;
-        parentSeq: number | null;
-        dirName: string;
-    }
-    | {
-        kind: "file";
-        fileSeq: number;
-    };
-
-const FileViewer: React.FC = () => {
+const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onClearSearch}) => {
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
     const [files, setFiles] = useState<FileInfo[]>([]);
     const [dragOverTargetSeq, setDragOverTargetSeq] = useState<number | null | undefined>(undefined);

@@ -1,14 +1,5 @@
 import React from 'react';
-
-interface LinearLayoutProps {
-    children: React.ReactNode;
-    direction?: 'horizontal' | 'vertical';
-    gap?: string;
-    align?: 'start' | 'center' | 'end' | 'stretch';
-    justify?: 'start' | 'center' | 'end' | 'between' | 'around';
-    className?: string;
-    style?: React.CSSProperties;
-}
+import type {LinearLayoutProps} from "../types/LayoutProps.ts";
 
 //기본값 지정
 const LinearLayout: React.FC<LinearLayoutProps> = ({

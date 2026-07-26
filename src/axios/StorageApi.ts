@@ -6,33 +6,14 @@ import {refresh} from "./UserApi.ts";
 import type {FileInfo} from "../types/FileInfo.ts";
 import type {DirectoryInfo} from "../types/DirectoryInfo.ts";
 import type {DirHierarchyInfo} from "../types/DirHierarchyInfo.ts";
-
-interface ExploreResponse {
-    dirs: DirectoryInfo[];
-    current:number
-}
-
-interface MoveDirRequest {
-    dirSeq: number;
-    targetSeq: number | null;
-}
-
-interface MoveFilesRequest {
-    targetDirSeq: number | null;
-    files: {
-        fileSeq: number;
-    }[];
-}
-
-interface RenameDirRequest {
-    dirSeq: number;
-    dirName: string;
-}
-
-interface RenameFileRequest {
-    fileSeq: number;
-    title: string;
-}
+import type {
+    ExploreResponse,
+    MoveDirRequest,
+    MoveFilesRequest,
+    RenameDirRequest,
+    RenameFileRequest,
+    SearchResponse,
+} from "../types/StorageApiTypes.ts";
 
 export const api = axios.create({
 

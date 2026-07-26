@@ -1,9 +1,5 @@
 import styles from "../styles/Button.module.css";
-
-interface ButtonProp {
-    onClick: () => void;
-    content: string;
-}
+import type {ButtonProp} from "../types/ButtonProps.ts";
 
 export const Button = ({ onClick, content }: ButtonProp) => {
     return (

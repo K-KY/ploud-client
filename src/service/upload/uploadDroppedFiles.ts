@@ -2,15 +2,7 @@ import {getPresignedUrl} from "../../axios/StorageApi.ts";
 import {postFile} from "../../axios/MetadataApi.ts";
 import type {FileWithId} from "../../types/FileWithId.ts";
 import type {StorageInfo} from "../../types/StorageInfo.ts";
-
-export interface DroppedFile {
-    file: File;
-    relativePath: string;
-}
-
-interface UploadDroppedFilesOptions {
-    locationPrefix: string;
-}
+import type {DroppedFile, UploadDroppedFilesOptions} from "../../types/UploadDroppedFileTypes.ts";
 
 export async function extractDroppedFiles(dataTransfer: DataTransfer): Promise<DroppedFile[]> {
     const items = Array.from(dataTransfer.items ?? []);

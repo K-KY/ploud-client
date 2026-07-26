@@ -1,18 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react';
 import dotIcon from "../assets/dotIcon.svg"
 import styles from "../styles/ActionMenu.module.css"
-
-export interface ActionMenuItem {
-    key: string;
-    label: string;
-    icon?: React.ReactNode;
-    danger?: boolean;
-    onClick: () => void;
-}
-
-interface ActionMenuProps {
-    items: ActionMenuItem[];
-}
+import type {ActionMenuProps} from "../types/ActionMenuTypes.ts";
 
 const ActionMenu: React.FC<ActionMenuProps> = ({items}) => {
     const [open, setOpen] = useState(false);

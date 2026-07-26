@@ -2,14 +2,7 @@ import {useEffect, useState} from 'react';
 import styles from '../styles/Signup.module.css';
 import {signUp, verifySignUp} from "../axios/UserApi.ts";
 import {Link, useSearchParams} from "react-router-dom";
-
-interface SignupRequest {
-    userName: string;
-    userEmail: string;
-    password: string;
-}
-
-type SignupStatus = 'form' | 'emailSent' | 'verifying' | 'success' | 'failure';
+import type {SignupRequest, SignupStatus} from "../types/SignupTypes.ts";
 
 const Signup = () => {
     const [searchParams] = useSearchParams();

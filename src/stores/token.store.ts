@@ -1,12 +1,5 @@
 import { create } from "zustand"
-
-interface ATStore {
-    accessToken: string|null;
-    isAuthenticated: boolean
-
-    setAccessToken: (token: string | null) => void;
-    logout: () => void
-}
+import type {ATStore} from "../types/AuthStoreTypes.ts";
 
 export const userAuthStore = create<ATStore>((set) => ({
     accessToken: null,

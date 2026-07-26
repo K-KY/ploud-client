@@ -1,22 +1,6 @@
 import React from 'react';
 import {LinearLayout} from './LinearLayout';
-
-interface BorderLayoutProps {
-    children: React.ReactNode;
-    padding?: string;
-    border?: string;
-    borderRadius?: string;
-    background?: string;
-    shadow?: boolean;
-    direction?: 'horizontal' | 'vertical';
-    gap?: string;
-    align?: 'start' | 'center' | 'end' | 'stretch';
-    justify?: 'start' | 'center' | 'end' | 'between' | 'around';
-    className?: string;
-    style?: React.CSSProperties;
-    onClick?: () => void;
-    cursor?: string;
-}
+import type {BorderLayoutProps} from "../types/LayoutProps.ts";
 
 const BorderLayout: React.FC<BorderLayoutProps> = ({
                                                        children,

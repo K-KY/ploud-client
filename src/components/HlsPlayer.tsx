@@ -1,14 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import Hls from 'hls.js';
-
-type HlsPlayerProps = {
-    src: string;          // m3u8 URL (예: /hls/1/output.m3u8)
-    autoPlay?: boolean;
-    controls?: boolean;
-    muted?: boolean;
-    poster?: string;
-    className?: string;
-};
+import type {HlsPlayerProps} from "../types/HlsPlayerProps.ts";
 
 const HlsPlayer: React.FC<HlsPlayerProps> = ({
                                                  src,

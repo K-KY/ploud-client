@@ -1,7 +1,5 @@
 import styles from "../styles/IconStyle.module.css"
-interface FileIconProps {
-    children?: React.ReactNode;
-}
+import type {FileIconProps} from "../types/IconProps.ts";
 
 const FileIcon = ({children}: FileIconProps) => {
     return (

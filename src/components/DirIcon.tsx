@@ -1,10 +1,7 @@
 import styles from "../styles/IconStyle.module.css"
+import type {DirIconProps} from "../types/IconProps.ts";
 
-interface DirIconPros {
-    children?: React.ReactNode;
-}
-
-const DirIcon = ({children}: DirIconPros) => {
+const DirIcon = ({children}: DirIconProps) => {
     return (
         <div>
             <svg
