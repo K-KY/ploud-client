@@ -283,4 +283,3 @@ const Signup = () => {
 };
 
 export default Signup;
-export type {SignupRequest}

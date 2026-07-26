@@ -8,6 +8,7 @@
 }
 
 .shell {
+    position: relative;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -46,6 +47,136 @@
     flex-wrap: wrap;
 }
 
+.searchPanel {
+    position: relative;
+    z-index: 100;
+    margin-bottom: 1rem;
+}
+
+.searchBox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid #dfe3eb;
+    border-radius: 1.35rem;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.07);
+    backdrop-filter: blur(12px);
+}
+
+.searchIcon {
+    flex-shrink: 0;
+    padding: 0.45rem 0.65rem;
+    border-radius: 999px;
+    background: #eef3fd;
+    color: #1a73e8;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.searchInput {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #202124;
+    font-size: 1rem;
+}
+
+.searchInput::placeholder {
+    color: #8a94a6;
+}
+
+.searchButton,
+.clearSearchButton {
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 999px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.searchButton {
+    padding: 0.7rem 1.15rem;
+    background: #1a73e8;
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(26, 115, 232, 0.22);
+}
+
+.searchButton:disabled {
+    cursor: not-allowed;
+    background: #b7c2d6;
+    box-shadow: none;
+}
+
+.clearSearchButton {
+    padding: 0.6rem 0.9rem;
+    background: #eef2f7;
+    color: #475569;
+}
+
+.suggestionDropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0.75rem;
+    right: 0.75rem;
+    z-index: 101;
+    overflow: hidden;
+    border: 1px solid #dfe3eb;
+    border-radius: 1rem;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+}
+
+.suggestionItem {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 0;
+    border-bottom: 1px solid #edf1f7;
+    background: #ffffff;
+    color: #202124;
+    text-align: left;
+    cursor: pointer;
+}
+
+.suggestionItem:hover {
+    background: #f1f6ff;
+}
+
+.suggestionItem:last-child {
+    border-bottom: 0;
+}
+
+.suggestionType {
+    flex-shrink: 0;
+    width: 2.8rem;
+    color: #1a73e8;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.suggestionName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.suggestionState {
+    padding: 0.9rem 1rem;
+    color: #64748b;
+    font-size: 0.92rem;
+}
+
 @media (max-width: 768px) {
     .page {
         padding: 1.5rem 1rem 2rem;
@@ -58,5 +189,18 @@
     .toolbar {
         width: 100%;
         justify-content: stretch;
+    }
+
+    .searchBox {
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    .searchIcon {
+        display: none;
+    }
+
+    .searchInput {
+        flex-basis: 100%;
     }
 }

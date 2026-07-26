@@ -79,6 +79,16 @@ const moveFiles = async (request: MoveFilesRequest) => {
         .then(response => response.data)
 }
 
+const searchStorage = async (keyword: string, limit = 30, signal?: AbortSignal): Promise<SearchResponse> => {
+    return await api.get("/api/v1/search", {
+        params: {
+            q: keyword,
+            limit,
+        },
+        signal,
+    }).then(response => response.data)
+}
+
 const getFiles = async (request: StorageRequest) => {
     return await call(request.dirSeq)
         .then(response => {
@@ -201,5 +211,6 @@ export {
     moveDir,
     deleteFiles,
     renameFile,
-    moveFiles
+    moveFiles,
+    searchStorage
 }

@@ -46,6 +46,9 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
     //현재 경로
     const currentPath = useDirTreeStore((state) => state.currentPath);
     const tree = useDirTreeStore((state) => state.tree);
+    const visibleDirs = searchResult?.dirs ?? dirs;
+    const visibleFiles = searchResult?.files ?? files;
+    const isSearchMode = searchResult != null;
 
     useEffect(() => {
         async function load() {
@@ -84,6 +87,7 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
     }
 
     function changeDir(dir: DirectoryInfo) {
+        onClearSearch?.();
         navigate(
             `/${dir.dirSeq}`,
             { replace: false }
@@ -91,6 +95,7 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
     }
 
     async function gotoParent() {
+        onClearSearch?.();
         const parentSeq = currentPath.length > 1 ? currentPath[currentPath.length - 2] : ROOT_DIR_SEQ;
 
         if (!parentSeq || parentSeq === ROOT_DIR_SEQ) {
@@ -414,8 +419,14 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
                     <div className={styles.headerName}>이름</div>
                     <div className={styles.headerMeta}>정보</div>
                 </div>
+                {isSearchMode ? (
+                    <div className={styles.searchResultBanner}>
+                        <span>'{searchKeyword}' 검색 결과</span>
+                        <button type="button" onClick={onClearSearch}>현재 위치 보기</button>
+                    </div>
+                ) : null}
                 <div className={`${styles.fileList}`}>
-                    {currentDirSeq !== ROOT_DIR_SEQ ? (
+                    {!isSearchMode && currentDirSeq !== ROOT_DIR_SEQ ? (
                         <a
                             className={`${styles.item} ${dragOverTargetSeq === getParentDropTargetSeq() ? styles.dropTarget : ""}`}
                             onClick={() => gotoParent()}
@@ -435,7 +446,7 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
                         </a>
                     ) : null}
 
-                    {dirs.map((dir) => (
+                    {visibleDirs.map((dir) => (
                         <a
                             className={`${styles.item} ${dragOverTargetSeq === dir.dirSeq ? styles.dropTarget : ""}`}
                             draggable
@@ -459,7 +470,7 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
                         </a>
                     ))}
 
-                    {files.map((file) => (
+                    {visibleFiles.map((file) => (
                         <a
                             className={`${styles.item}`}
                             draggable
@@ -478,6 +489,11 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
                             </BorderLayout>
                         </a>
                     ))}
+                    {visibleDirs.length === 0 && visibleFiles.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            {isSearchMode ? "검색 결과가 없습니다" : "현재 위치에 파일이나 폴더가 없습니다"}
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 import axios from "axios";
 import type {LoginForm} from "../types/LoginForm.ts";
 import {userAuthStore} from "../stores/token.store.ts";
-import type {SignupRequest} from "../components/Signup.tsx";
+import type {SignupRequest} from "../types/SignupTypes.ts";
 
 export const api = axios.create({
 
