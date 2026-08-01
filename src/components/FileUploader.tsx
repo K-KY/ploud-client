@@ -13,7 +13,7 @@ export default function FileUploader() {
     const [uploading, setUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<Record<string, UploadStatus>>({});
 
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    // const MAX_FILE_SIZE = 1000 * 1024 * 1024; // 10MB
     const directoryInputProps = {
         webkitdirectory: "",
         directory: "",
@@ -28,18 +28,24 @@ export default function FileUploader() {
             const fileId = `${file.name}-${file.size}-${Date.now()}`;
 
             // 파일 크기 검증만 수행
-            if (file.size > MAX_FILE_SIZE) {
-                newStatus[fileId] = {
-                    status: 'error',
-                    message: `파일 크기가 10MB를 초과합니다 (${(file.size / 1024 / 1024).toFixed(2)}MB)`
-                };
-            } else {
-                newStatus[fileId] = {
-                    status: 'ready',
-                    message: '업로드 준비됨'
-                };
-                validFiles.push({file, id: fileId, preSignedUrl:"", storageKey:""});
-            }
+            // if (file.size > MAX_FILE_SIZE) {
+            //     newStatus[fileId] = {
+            //         status: 'error',
+            //         message: `파일 크기가 10MB를 초과합니다 (${(file.size / 1024 / 1024).toFixed(2)}MB)`
+            //     };
+            // } else {
+            //     newStatus[fileId] = {
+            //         status: 'ready',
+            //         message: '업로드 준비됨'
+            //     };
+            //     validFiles.push({file, id: fileId, preSignedUrl:"", storageKey:""});
+            // }
+
+            newStatus[fileId] = {
+                status: 'ready',
+                message: '업로드 준비됨'
+            };
+            validFiles.push({file, id: fileId, preSignedUrl: "", storageKey: ""});
         });
 
         setFiles(prev => [...prev, ...validFiles]);
@@ -49,115 +55,114 @@ export default function FileUploader() {
     const uploadFile = (fileWithId: FileWithId): Promise<void> =>
         new Promise((resolve, reject) => {
 
-        setUploadStatus(prev => ({
-            ...prev,
-            [fileWithId.id]: {status: 'uploading', message: '업로드 중...', progress: 0}
-        }));
+            setUploadStatus(prev => ({
+                ...prev,
+                [fileWithId.id]: {status: 'uploading', message: '업로드 중...', progress: 0}
+            }));
 
 
-        try {
-            const xhr = new XMLHttpRequest();
+            try {
+                const xhr = new XMLHttpRequest();
 
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    setUploadStatus(prev => ({
-                        ...prev,
-                        [fileWithId.id]: {
-                            status: 'uploading',
-                            message: `업로드 중... ${percent}%`,
-                            progress: percent
-                        }
-                    }));
-                }
-            });
-
-            xhr.addEventListener('load', () => {
-                if (xhr.status === 200) {
-                    console.log("etag = ", xhr.getResponseHeader("ETag"))
-                    try {
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
                         setUploadStatus(prev => ({
                             ...prev,
                             [fileWithId.id]: {
-                                status: 'success',
-                                message: '업로드 완료',
-                                progress: 100,
-                            }
-                        }));
-
-                        const eTagHeader = xhr.getResponseHeader("ETag");
-
-                        if (!eTagHeader) {
-                            console.error("파일 업로드 실패");
-                            // 에러 처리 로직 (업로드 실패 처리 등)
-                            return;
-                        }
-
-
-
-                        const file:StorageInfo = {
-                            originalFilename: fileWithId.file.webkitRelativePath ? fileWithId.file.webkitRelativePath : fileWithId.file.name,
-                            location:"",
-                            size:fileWithId.file.size,
-                            storageKey:fileWithId.storageKey,
-                            contentType:fileWithId.file.type,
-                            fileHash:eTagHeader.replace(/"/g, "")
-                        }
-                        console.log(file)
-
-                        postFile(file)
-
-
-                    } catch (error) {
-                        console.error(error);
-                        setUploadStatus(prev => ({
-                            ...prev,
-                            [fileWithId.id]: {
-                                status: 'success',
-                                message: '업로드 완료',
-                                progress: 100
+                                status: 'uploading',
+                                message: `업로드 중... ${percent}%`,
+                                progress: percent
                             }
                         }));
                     }
-                } else {
-                    const errorMessage = xhr.responseText || '업로드 실패';
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        console.log("etag = ", xhr.getResponseHeader("ETag"))
+                        try {
+                            setUploadStatus(prev => ({
+                                ...prev,
+                                [fileWithId.id]: {
+                                    status: 'success',
+                                    message: '업로드 완료',
+                                    progress: 100,
+                                }
+                            }));
+
+                            const eTagHeader = xhr.getResponseHeader("ETag");
+
+                            if (!eTagHeader) {
+                                console.error("파일 업로드 실패");
+                                // 에러 처리 로직 (업로드 실패 처리 등)
+                                return;
+                            }
+
+
+                            const file: StorageInfo = {
+                                originalFilename: fileWithId.file.webkitRelativePath ? fileWithId.file.webkitRelativePath : fileWithId.file.name,
+                                location: "",
+                                size: fileWithId.file.size,
+                                storageKey: fileWithId.storageKey,
+                                contentType: fileWithId.file.type,
+                                fileHash: eTagHeader.replace(/"/g, "")
+                            }
+                            console.log(file)
+
+                            postFile(file)
+
+
+                        } catch (error) {
+                            console.error(error);
+                            setUploadStatus(prev => ({
+                                ...prev,
+                                [fileWithId.id]: {
+                                    status: 'success',
+                                    message: '업로드 완료',
+                                    progress: 100
+                                }
+                            }));
+                        }
+                    } else {
+                        const errorMessage = xhr.responseText || '업로드 실패';
+                        setUploadStatus(prev => ({
+                            ...prev,
+                            [fileWithId.id]: {
+                                status: 'error',
+                                message: `업로드 실패: ${errorMessage}`
+                            }
+                        }));
+                    }
+
+                });
+
+                xhr.addEventListener('error', () => {
                     setUploadStatus(prev => ({
                         ...prev,
                         [fileWithId.id]: {
                             status: 'error',
-                            message: `업로드 실패: ${errorMessage}`
+                            message: '네트워크 오류가 발생했습니다'
                         }
                     }));
-                }
+                });
 
-            });
+                xhr.open('PUT', fileWithId.preSignedUrl);
+                xhr.send(fileWithId.file);
 
-            xhr.addEventListener('error', () => {
+                xhr.onload = () => resolve();
+                xhr.onerror = () => reject();
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
                 setUploadStatus(prev => ({
                     ...prev,
                     [fileWithId.id]: {
                         status: 'error',
-                        message: '네트워크 오류가 발생했습니다'
+                        message: `업로드 실패: ${errorMessage}`
                     }
                 }));
-            });
-
-            xhr.open('PUT', fileWithId.preSignedUrl);
-            xhr.send(fileWithId.file);
-
-            xhr.onload = () => resolve();
-            xhr.onerror = () => reject();
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-            setUploadStatus(prev => ({
-                ...prev,
-                [fileWithId.id]: {
-                    status: 'error',
-                    message: `업로드 실패: ${errorMessage}`
-                }
-            }));
-        }
-    });
+            }
+        });
 
     const handleUpload = async () => {
         setUploading(true);
@@ -171,12 +176,15 @@ export default function FileUploader() {
         // 병렬 업로드 (동시에 최대 3개)
         const chunkSize = 3;
         for (let i = 0; i < filesToUpload.length; i += chunkSize) {
-            const chunk:FileWithId[] = filesToUpload.slice(i, i + chunkSize);
+            const chunk: FileWithId[] = filesToUpload.slice(i, i + chunkSize);
             const presignedUrls = await getPresignedUrl(chunk);
 
             // presignedUrl을 각 파일에 매핑
             const chunkWithUrls = chunk.map(fileWithId => {
-                const urlData = presignedUrls.find((item:{fileName:string, fileId:string}) => item.fileId === fileWithId.id);
+                const urlData = presignedUrls.find((item: {
+                    fileName: string,
+                    fileId: string
+                }) => item.fileId === fileWithId.id);
                 return {
                     ...fileWithId,
                     preSignedUrl: urlData?.preSignedUrl || urlData?.url,
@@ -194,9 +202,7 @@ export default function FileUploader() {
         setUploading(false);
 
 
-
     };
-
 
 
     const removeFile = (id: string) => {
@@ -247,8 +253,8 @@ export default function FileUploader() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 >
-                    <path d="M19 12H5" />
-                    <path d="M12 19l-7-7 7-7" />
+                    <path d="M19 12H5"/>
+                    <path d="M12 19l-7-7 7-7"/>
                 </svg>
             </button>
 
