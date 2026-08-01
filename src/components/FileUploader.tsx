@@ -6,6 +6,7 @@ import {getPresignedUrl} from "../axios/StorageApi.ts";
 import {postFile} from "../axios/MetadataApi.ts";
 import type {StorageInfo} from "../types/StorageInfo.ts";
 import {useNavigate} from "react-router-dom";
+import {formatFileSize} from "../service/unitFormatter.ts";
 
 export default function FileUploader() {
     const navigate = useNavigate();
@@ -338,7 +339,7 @@ export default function FileUploader() {
                                                     {fileWithId.file.name}
                                                 </p>
                                                 <p className={`${styles.fileSize}`}>
-                                                    {(fileWithId.file.size / 1024).toFixed(2)} KB
+                                                    {formatFileSize(fileWithId.file.size)}
                                                     {status?.message && (
                                                         <span
                                                             className={getStatusColor(status.status)}
