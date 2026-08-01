@@ -27,6 +27,7 @@ import type {FileViewerProps, InternalDragPayload} from "../types/FileViewerType
 
 const ROOT_DIR_SEQ = 0;
 const INTERNAL_DRAG_MIME = "application/x-ploud-item";
+const FILE_SIZE_UNITS = ["B", "KB", "MB", "GB", "TB"];
 
 const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onClearSearch}) => {
     const [dirs, setDirs] = useState<DirectoryInfo[]>([]);
@@ -407,6 +408,26 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
         await refreshCurrentDir();
     }
 
+    function formatFileSize(size: number) {
+        if (!Number.isFinite(size) || size < 0) {
+            return "0 B";
+        }
+
+        let value = size;
+        let unitIndex = 0;
+
+        while (value >= 1000 && unitIndex < FILE_SIZE_UNITS.length - 1) {
+            value /= 1000;
+            unitIndex += 1;
+        }
+
+        const formattedValue = value >= 10 || unitIndex === 0
+            ? Math.round(value).toString()
+            : value.toFixed(1);
+
+        return `${formattedValue} ${FILE_SIZE_UNITS[unitIndex]}`;
+    }
+
     return (
         <div
             className={`${styles.fileListContainer} ${isExternalDragOver ? styles.externalDragOver : ""}`}
@@ -484,7 +505,7 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
                                     </div>
                                     <div className={styles.fileName}>{file.title}</div>
                                 </div>
-                                <div className={styles.metaCell}>{file.size}</div>
+                                <div className={styles.metaCell}>{formatFileSize(file.size)}</div>
                                 <ActionMenu items={getFileMenus(file)}/>
                             </BorderLayout>
                         </a>
