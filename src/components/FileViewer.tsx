@@ -50,6 +50,10 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
     const visibleDirs = searchResult?.dirs ?? dirs;
     const visibleFiles = searchResult?.files ?? files;
     const isSearchMode = searchResult != null;
+    const canGoParent = !isSearchMode
+        && currentDirSeq !== ROOT_DIR_SEQ
+        && currentPath.length > 1
+        && currentPath[currentPath.length - 1] === currentDirSeq;
 
     useEffect(() => {
         async function load() {
@@ -426,7 +430,7 @@ const FileViewer: React.FC<FileViewerProps> = ({searchResult, searchKeyword, onC
                     </div>
                 ) : null}
                 <div className={`${styles.fileList}`}>
-                    {!isSearchMode && currentDirSeq !== ROOT_DIR_SEQ ? (
+                    {canGoParent ? (
                         <a
                             className={`${styles.item} ${dragOverTargetSeq === getParentDropTargetSeq() ? styles.dropTarget : ""}`}
                             onClick={() => gotoParent()}
