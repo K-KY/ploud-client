@@ -25,10 +25,25 @@
 }
 
 .label {
+    border: 0;
+    padding: 0;
+    background: transparent;
     color: #5f6368;
+    font: inherit;
+    cursor: pointer;
+}
+
+.label:hover {
+    color: #2563eb;
+    text-decoration: underline;
 }
 
 .current {
+    border: 0;
+    padding: 0;
+    background: transparent;
     font-weight: 600;
     color: #1f1f1f;
+    font: inherit;
+    cursor: default;
 }

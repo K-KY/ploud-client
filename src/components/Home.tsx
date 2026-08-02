@@ -210,7 +210,7 @@ export function Home() {
                     </div>
                 </form>
 
-                <LocationIndicator />
+                <LocationIndicator onNavigate={clearSearch} />
                 <FileViewer
                     searchResult={searchResult}
                     searchKeyword={activeSearchKeyword}
